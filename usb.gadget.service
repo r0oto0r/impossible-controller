@@ -1,0 +1,10 @@
+[Unit]
+After=rc-local.service
+
+[Service]
+ExecStart=/root/usb.sh
+Type=oneshot
+RemainAfterExit=true
+
+[Install]
+WantedBy=basic.target

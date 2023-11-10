@@ -1,0 +1,13 @@
+[Unit]
+Description=Impossible Controller
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/impossible-controller
+Environment="PROD=true"
+ExecStart=/home/pi/.nvm/versions/node/v18.15.0/bin/node out/index.js
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target
