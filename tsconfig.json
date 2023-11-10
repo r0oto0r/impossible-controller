@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"outDir": "out",
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"lib": ["ESNext", "DOM"],
+		"noImplicitAny": true,
+	},
+	"exclude": [
+		"node_modules"
+	],
+	"include": [
+		"src/**/*"
+    ]
+}
