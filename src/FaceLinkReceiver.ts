@@ -121,7 +121,6 @@ export class FaceLinkReceiver {
 							if(keyBinding) {
 								const { faceBlendShape, maxThreshold, minThreshold } = keyBinding;
 								if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] < minThreshold || livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] > maxThreshold) {
-									Log.debug(`Web key code ${key} released.`);
 									this.keyUp(key);
 									cacheUpdated = true;
 								}
@@ -132,7 +131,6 @@ export class FaceLinkReceiver {
 					for(const keyBinding of keyBindings) {
 						const { faceBlendShape, webKeyCode, maxThreshold, minThreshold } = keyBinding;
 						if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] >= minThreshold && livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] <= maxThreshold) {
-							Log.debug(`Web key code ${webKeyCode} pressed.`);
 							this.keyDown(webKeyCode);
 							cacheUpdated = true;
 						}
@@ -169,17 +167,19 @@ export class FaceLinkReceiver {
 
 	public static keyDown(code: string) {
 		if(!this.keysPressedCache[code]) {
+			Log.info(`Web key code ${code} pressed.`);
 			this.keysPressedCache[code] = true;
-			const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
+			const keysPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
 			Keyboard.press(keysPressed);
 		}
 	}
 
 	public static keyUp(code: string) {
 		if(this.keysPressedCache[code]) {
+			Log.info(`Web key code ${code} released.`);
 			this.keysPressedCache[code] = undefined;
 			Keyboard.release();
-			const keysStillPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
+			const keysStillPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
 			if(keysStillPressed.length > 0) {
 				Keyboard.press(keysStillPressed);
 			}
