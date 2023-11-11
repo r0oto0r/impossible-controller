@@ -65,11 +65,19 @@ export class Keyboard {
 	}
 
 	public static press(keys: Array<string>) {
-		const HIDMessage = Keyboard.generateHIDMessage(keys);
-		Keyboard.keyboardStream.write(HIDMessage);
+		try {
+			const HIDMessage = Keyboard.generateHIDMessage(keys);
+			Keyboard.keyboardStream.write(HIDMessage);
+		} catch (error) {
+			Log.error(`Error occured: ${error}`);
+		}
 	}
 
 	public static release() {
-		Keyboard.keyboardStream.write(CLEAR_ALL);
+		try {
+			Keyboard.keyboardStream.write(CLEAR_ALL);
+		} catch (error) {
+			Log.error(`Error occured: ${error}`);
+		}
 	}
 }
