@@ -9,7 +9,7 @@ import { FaceLinkKeyBindings } from './FaceLinkKeyBindings';
 
 (async () => {
     try {
-		Log.info(`Booting Impossible Version ${process.env.npm_package_version}`);
+		Log.info(`Booting Impossible Version ${process.env.npm_package_version} ${process.env.PROD ? 'PROD' : 'DEV'}`);
 
 		await Database.init();
 
