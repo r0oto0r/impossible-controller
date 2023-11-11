@@ -102,7 +102,7 @@ function KeyMapping(): JSX.Element {
 						</div>
 					</div>
 					<div className="w3-half">
-						<input className="w3-input w3-border" readOnly type="number" placeholder="0" value={selectedBlendShape && liveLinkData ? liveLinkData[FaceBlendShape[selectedBlendShape]] : 0}/>
+						<input className="w3-input w3-border" readOnly type="number" placeholder="0" value={selectedBlendShape && liveLinkData ? liveLinkData.blendShapes[FaceBlendShape[selectedBlendShape]] : 0}/>
 					</div>
 				</div>
 			</div>

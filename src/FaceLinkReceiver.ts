@@ -167,7 +167,7 @@ export class FaceLinkReceiver {
 
 	public static keyDown(code: string) {
 		if(!this.keysPressedCache[code]) {
-			Log.info(`Web key code ${code} pressed.`);
+			Log.debug(`Web key code ${code} pressed.`);
 			this.keysPressedCache[code] = true;
 			const keysPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
 			Keyboard.press(keysPressed);
@@ -176,7 +176,7 @@ export class FaceLinkReceiver {
 
 	public static keyUp(code: string) {
 		if(this.keysPressedCache[code]) {
-			Log.info(`Web key code ${code} released.`);
+			Log.debug(`Web key code ${code} released.`);
 			this.keysPressedCache[code] = undefined;
 			Keyboard.release();
 			const keysStillPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
