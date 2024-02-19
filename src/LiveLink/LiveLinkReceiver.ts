@@ -1,12 +1,11 @@
-import { Log } from './Log';
+import { Log } from '../common/Log';
 import struct from 'python-struct';
-import { dgramServer } from './dgramServer';
-import { Keyboard, KeyboardMessage } from './Keyboard';
-import { FaceLinkKeyBindings } from './FaceLinkKeyBindings';
+import { dgramServer } from '../common/dgramServer';
+import { Keyboard } from '../common/Keyboard';
+import { LiveLinkKeyBindings } from './LiveLinkKeyBindings';
 import { RemoteInfo } from 'dgram';
-import { SocketServer } from './SocketServer';
-import express, { Application } from 'express';
-import path from 'path';
+import { SocketServer } from '../common/SocketServer';
+import { KeyPressedMap } from '../common/SharedInterfaces';
 
 export enum FaceBlendShape {
 	EyeBlinkLeft = 0,
@@ -83,28 +82,21 @@ export interface LiveLinkData {
 	blendShapes: number[];
 };
 
-export interface KeyPressedMap {
-	[key: string]: boolean | undefined;
-};
-
-export class FaceLinkReceiver {
+export class LiveLinkReceiver {
 	private static keysPressedCache: KeyPressedMap = {} as KeyPressedMap;
 	private static lastFrameNumber: number = 0;
 
-	public static init(app: Application) {
-		Log.info("Initializing FaceLink Receiver");
+	public static init() {
+		Log.info("Initializing Live Link Face Receiver");
 
 		const serverSocket = dgramServer.init();
 
 		serverSocket.on('message', this.handleFaceLinkMessage.bind(this));
-
-		app.use('/', express.static(path.join(__dirname, '../frontend/build')))
 	}
 
 	private static handleFaceLinkMessage(message: Buffer, remote: RemoteInfo) {
 		try {
-			const livelinkData = FaceLinkReceiver.decode(message);
-			let cacheUpdated = false;
+			const livelinkData = LiveLinkReceiver.decode(message);
 
 			if(livelinkData) {
 				if(livelinkData.frameNumber > this.lastFrameNumber) {
@@ -113,26 +105,24 @@ export class FaceLinkReceiver {
 
 					SocketServer.emit('LIVE_LINK_DATA', livelinkData);
 
-					const keyBindings = FaceLinkKeyBindings.getBindings();
+					const keyBindings = LiveLinkKeyBindings.getBindings();
 
 					for(const key in this.keysPressedCache) {
 						if(this.keysPressedCache[key]) {
-							const keyBinding = keyBindings.find(keyBinding => keyBinding.webKeyCode === key);
+							const keyBinding = keyBindings.find(keyBinding => keyBinding.keyCode === key);
 							if(keyBinding) {
 								const { faceBlendShape, maxThreshold, minThreshold } = keyBinding;
 								if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] < minThreshold || livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] > maxThreshold) {
 									this.keyUp(key);
-									cacheUpdated = true;
 								}
 							}
 						}
 					}
 
 					for(const keyBinding of keyBindings) {
-						const { faceBlendShape, webKeyCode, maxThreshold, minThreshold } = keyBinding;
+						const { faceBlendShape, keyCode, maxThreshold, minThreshold } = keyBinding;
 						if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] >= minThreshold && livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] <= maxThreshold) {
-							this.keyDown(webKeyCode);
-							cacheUpdated = true;
+							this.keyDown(keyCode);
 						}
 					}
 				}
@@ -140,20 +130,11 @@ export class FaceLinkReceiver {
 				if(Object.keys(this.keysPressedCache).length > 0) {
 					Log.debug(`No message received. Clearing all keys.`);
 					this.clearAllKeys();
-					cacheUpdated = true;
 				}
 				if(this.lastFrameNumber !== 0) {
 					this.lastFrameNumber = 0;
 					SocketServer.emit('LIVE_LINK_DATA', undefined);
 				}
-			}
-
-			if(cacheUpdated) {
-				Log.debug(`Keys pressed cache: ${JSON.stringify(this.keysPressedCache)}`);
-
-				const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
-
-				SocketServer.emit(KeyboardMessage.KEYS_PRESSED, keysPressed);
 			}
 		} catch (error) {
 			Log.error(`Error occured: ${error}`);
@@ -161,8 +142,12 @@ export class FaceLinkReceiver {
 	}
 
 	public static clearAllKeys() {
-		this.keysPressedCache = {} as KeyPressedMap;
-		Keyboard.release();
+		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
+		if(keysPressed.length > 0) {
+			Log.debug(`Clearing all keys.`);
+			this.keysPressedCache = {} as KeyPressedMap;
+			Keyboard.release(keysPressed);
+		}
 	}
 
 	public static keyDown(code: string) {
@@ -178,11 +163,7 @@ export class FaceLinkReceiver {
 		if(this.keysPressedCache[code]) {
 			Log.debug(`Web key code ${code} released.`);
 			this.keysPressedCache[code] = undefined;
-			Keyboard.release();
-			const keysStillPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
-			if(keysStillPressed.length > 0) {
-				Keyboard.press(keysStillPressed);
-			}
+			Keyboard.release([code]);
 		}
 	}
 

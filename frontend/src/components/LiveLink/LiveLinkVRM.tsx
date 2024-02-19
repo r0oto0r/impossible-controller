@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { SocketClient } from "../socket/SocketClient";
-import { LiveLinkData } from "../slices/liveLinkDataSlice";
+import { SocketClient } from "../../socket/SocketClient";
+import { LiveLinkData } from "../../slices/liveLinkDataSlice";
 import * as THREE from 'three';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { FaceBlendShape } from "./KeyMapping";
+import { FaceBlendShape } from "./LiveLinkAnalyzer";
 
 const maxEyeYaw = 0.2;
 const minEyeYaw = -0.2;

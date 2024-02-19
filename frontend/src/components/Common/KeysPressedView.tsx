@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import './KeysPressedView.css';
-import { SocketClient } from "../socket/SocketClient";
-import { useAppSelector, useAppDispatch } from "../hooks/general";
-import { getKeysPressed, setKeysPressed } from "../slices/keysPressedSlice";
+import { SocketClient } from "../../socket/SocketClient";
+import { useAppSelector, useAppDispatch } from "../../hooks/general";
+import { getKeysPressed, setKeysPressed } from "../../slices/keysPressedSlice";
 
 export const WebKeyCodeMap: { [key: string]: string } = {};
 export const FrontendKeyMap: { [key: string]: string } = {};

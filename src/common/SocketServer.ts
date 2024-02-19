@@ -23,7 +23,7 @@ export class SocketServer {
 
 			this.clients.set(socket.id, socket);
 
-			Keyboard.initSocketClient(socket.id);
+			Keyboard.onClientConnected(socket);
 
 			socket.on('disconnect', () => {
 				this.clients.delete(socket.id);
@@ -40,11 +40,8 @@ export class SocketServer {
 		return this.io.in(room);
 	}
 
-	public static onClient(socketId: string, messageType: string, callback: (data?: any, responseCallback?: Function) => void) {
-		const socket = this.clients.get(socketId);
-		if(socket) {
-			socket.on(messageType, callback);
-		}
+	public static on(messageType: string, callback: (data?: any, responseCallback?: Function) => void) {
+		this.io.on(messageType, callback);
 	}
 
 	public static joinRoom(socketId: string, room: string) {

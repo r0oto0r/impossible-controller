@@ -1,6 +1,7 @@
 import knex, { Knex } from 'knex';
 import { Log } from "./Log";
-import { FaceLinkKeyBindingsModel } from './FaceLinkKeyBindingsModel';
+import { LiveLinkKeyBindingsModel } from '../LiveLink/LiveLinkKeyBindingsModel';
+import { AudioKeyBindingsModel } from '../Audio/AudioKeyBindingsModel';
 
 export const CACHE_DB_FILE = 'cache.db';
 
@@ -18,7 +19,8 @@ export class Database {
 			}
 		});
 
-		await FaceLinkKeyBindingsModel.init();
+		await LiveLinkKeyBindingsModel.init();
+		await AudioKeyBindingsModel.init();
 
 		Log.info(`Done setting up Database`);
 	}

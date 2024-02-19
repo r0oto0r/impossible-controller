@@ -1,11 +1,15 @@
-import { Log } from './Log';
+import express from 'express';
+import path from 'path';
+import { Log } from './common/Log';
 import http from "http";
-import { SocketServer } from './SocketServer';
-import { ExpressServer } from './ExpressServer';
-import { Keyboard } from './Keyboard';
-import { FaceLinkReceiver } from './FaceLinkReceiver';
-import { Database } from './Database';
-import { FaceLinkKeyBindings } from './FaceLinkKeyBindings';
+import { SocketServer } from './common/SocketServer';
+import { ExpressServer } from './common/ExpressServer';
+import { Keyboard } from './common/Keyboard';
+import { LiveLinkReceiver } from './LiveLink/LiveLinkReceiver';
+import { Database } from './common/Database';
+import { LiveLinkKeyBindings } from './LiveLink/LiveLinkKeyBindings';
+import { AudioKeyBindings } from './Audio/AudioKeyBindings';
+import { AudioReceiver } from './Audio/AudioReceiver';
 
 (async () => {
     try {
@@ -24,8 +28,13 @@ import { FaceLinkKeyBindings } from './FaceLinkKeyBindings';
             Log.info(`HTTP Server accepting connections on port ${port}`);
         });
 
-		await FaceLinkKeyBindings.init(app);
-		FaceLinkReceiver.init(app);
+		await LiveLinkKeyBindings.init(app);
+		LiveLinkReceiver.init();
+
+		await AudioKeyBindings.init(app);
+		AudioReceiver.init();
+
+		app.use('/', express.static(path.join(__dirname, '../frontend/build')));
     } catch (error: any) {
         Log.error(`Error occured: ${error}`);
     }

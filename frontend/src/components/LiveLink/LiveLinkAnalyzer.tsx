@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import './KeyMapping.css';
-import { useAppDispatch, useAppSelector } from "../hooks/general";
-import { LiveLinkData, getLiveLinkData, setLiveLinkData, setSelectedBlendShape } from "../slices/liveLinkDataSlice";
-import { SocketClient } from "../socket/SocketClient";
+import { useAppDispatch, useAppSelector } from "../../hooks/general";
+import { LiveLinkData, getLiveLinkData, setLiveLinkData, setSelectedBlendShape } from "../../slices/liveLinkDataSlice";
+import { SocketClient } from "../../socket/SocketClient";
+import './LiveLinkAnalyzer.css';
 
 export enum FaceBlendShape {
 	EyeBlinkLeft = 0,
@@ -68,7 +68,7 @@ export enum FaceBlendShape {
 	RightEyeRoll = 60
 };
 
-function KeyMapping(): JSX.Element {
+function LiveLinkAnalyzer(): JSX.Element {
 	const dispatch = useAppDispatch();
 	const { liveLinkData, selectedBlendShape } = useAppSelector((state) => getLiveLinkData(state));
 
@@ -86,7 +86,7 @@ function KeyMapping(): JSX.Element {
 	}, [ dispatch ]);
 
 	return (
-		<div className="keymapping">
+		<div className="livelinkkeymapping">
 			<div className="w3-container">	
 				<div className="w3-row-padding">
 					<div className="w3-half">
@@ -110,4 +110,4 @@ function KeyMapping(): JSX.Element {
 	);
 }
 
-export default KeyMapping;
+export default LiveLinkAnalyzer;

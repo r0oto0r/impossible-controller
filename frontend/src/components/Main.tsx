@@ -1,26 +1,24 @@
 import React from "react";
-import KeysPressedView from "./KeysPressedView";
-import LiveLinkVRM from "./LiveLinkVRM";
-import KeyMapping from "./KeyMapping";
+import KeysPressedView from "./Common/KeysPressedView";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import VoiceCommand from "./VoiceCommand";
+import AudioCommand from "./Audio/AudioCommand";
+import LiveLinkCommand from "./LiveLink/LiveLinkCommand";
 
 function Main(): JSX.Element {
 	return (
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={<React.Fragment />} />
-				<Route path="/facelink" element={
+				<Route path="/livelink" element={
 					<React.Fragment>
 						<KeysPressedView />
-						<LiveLinkVRM />
-						<KeyMapping />
+						<LiveLinkCommand />
 					</React.Fragment>
 				} />
-				<Route path="/voicecommand" element={
+				<Route path="/audio" element={
 					<React.Fragment>
 						<KeysPressedView />
-						<VoiceCommand />
+						<AudioCommand />
 					</React.Fragment>
 				} />
 			</Routes>
