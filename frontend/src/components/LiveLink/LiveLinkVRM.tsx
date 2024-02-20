@@ -47,7 +47,7 @@ function LiveLinkVRM(): JSX.Element {
 		});
 
 		loader.load(
-			'./avatars/Avatar3.vrm',
+			'/avatars/Avatar3.vrm',
 			(gltf) => {
 				const vrm = gltf.userData.vrm;
 
