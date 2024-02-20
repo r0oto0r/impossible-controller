@@ -22,7 +22,7 @@ import { Mouse } from './common/Mouse';
 		const httpServer = http.createServer(app);
 		const port = 9090;
 
-		app.use('/frontend/*', express.static(path.join(__dirname, '../frontend/build')));
+		app.use('/frontend', express.static(path.join(__dirname, '../frontend/build')));
 
 		await Keyboard.init();
 		await Mouse.init();
