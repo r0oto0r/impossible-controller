@@ -38,10 +38,6 @@ import { Mouse } from './common/Mouse';
 
 		await AudioKeyBindings.init(app);
 		AudioReceiver.init();
-
-		app.get('*', (_, res) => {
-			res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
-		});
     } catch (error: any) {
         Log.error(`Error occured: ${error}`);
     }
