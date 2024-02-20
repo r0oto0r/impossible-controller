@@ -2,6 +2,7 @@ import * as socketio from 'socket.io';
 import http from 'http';
 import { Log } from './Log';
 import { Keyboard } from './Keyboard';
+import { Mouse } from './Mouse';
 
 export class SocketServer {
 	private static io: socketio.Server;
@@ -24,6 +25,7 @@ export class SocketServer {
 			this.clients.set(socket.id, socket);
 
 			Keyboard.onClientConnected(socket);
+			Mouse.onClientConnected(socket);
 
 			socket.on('disconnect', () => {
 				this.clients.delete(socket.id);

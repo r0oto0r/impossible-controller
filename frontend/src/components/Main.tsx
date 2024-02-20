@@ -3,6 +3,7 @@ import KeysPressedView from "./Common/KeysPressedView";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AudioCommand from "./Audio/AudioCommand";
 import LiveLinkCommand from "./LiveLink/LiveLinkCommand";
+import Settings from "./Common/Settings";
 
 function Main(): JSX.Element {
 	return (
@@ -20,6 +21,9 @@ function Main(): JSX.Element {
 						<KeysPressedView />
 						<AudioCommand />
 					</React.Fragment>
+				} />
+				<Route path="/settings" element={
+					<Settings />
 				} />
 			</Routes>
 		</BrowserRouter>

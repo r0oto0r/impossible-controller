@@ -18,12 +18,12 @@ export class Keyboard {
 	private static keysPressedCache: KeyPressedMap = {} as KeyPressedMap;
 
 	public static async init() {
-		Keyboard.keyboardStream = fs.createWriteStream(KEYBOARD);
+		this.keyboardStream = fs.createWriteStream(KEYBOARD);
 		Log.info(`Keyboard initialized`);
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {
-		socket.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]));
+		socket.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 	}
 
 	private static generateHIDMessage(keys: Array<string>): string {
@@ -54,14 +54,14 @@ export class Keyboard {
 	}
 
 	public static press(keys: Array<string>) {
-		const keysPressed = Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]);
+		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 		const yetToPress = keys.filter(key => !keysPressed.includes(key));
 		if(yetToPress.length > 0) {
-			yetToPress.forEach(key => Keyboard.keysPressedCache[key] = true);
+			yetToPress.forEach(key => this.keysPressedCache[key] = true);
 			try {
-				const HIDMessage = Keyboard.generateHIDMessage(yetToPress);
-				Keyboard.keyboardStream.write(HIDMessage);
-				SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]));
+				const HIDMessage = this.generateHIDMessage(yetToPress);
+				this.keyboardStream.write(HIDMessage);
+				SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 			} catch (error) {
 				Log.error(`Error occured: ${error}`);
 			}
@@ -69,17 +69,17 @@ export class Keyboard {
 	}
 
 	public static release(keys: Array<string>) {
-		const keysPressed = Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]);
+		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 		const yetToRelease = keys.filter(key => keysPressed.includes(key));
 		if(yetToRelease.length > 0) {
 			try {
-				Keyboard.keyboardStream.write(CLEAR_ALL);
-				yetToRelease.forEach(key => Keyboard.keysPressedCache[key] = false);
-				const keysStillPressed = Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]);
+				this.keyboardStream.write(CLEAR_ALL);
+				yetToRelease.forEach(key => this.keysPressedCache[key] = false);
+				const keysStillPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 				if(keysStillPressed.length > 0) { 
-					const HIDMessage = Keyboard.generateHIDMessage(yetToRelease);
-					Keyboard.keyboardStream.write(HIDMessage);
-					SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]));
+					const HIDMessage = this.generateHIDMessage(yetToRelease);
+					this.keyboardStream.write(HIDMessage);
+					SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 				}
 			} catch (error) {
 				Log.error(`Error occured: ${error}`);
@@ -88,6 +88,6 @@ export class Keyboard {
 	}
 
 	public static keysPressed() {
-		return Object.keys(Keyboard.keysPressedCache).filter(key => Keyboard.keysPressedCache[key]);
+		return Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 	}
 }

@@ -10,6 +10,7 @@ import { Database } from './common/Database';
 import { LiveLinkKeyBindings } from './LiveLink/LiveLinkKeyBindings';
 import { AudioKeyBindings } from './Audio/AudioKeyBindings';
 import { AudioReceiver } from './Audio/AudioReceiver';
+import { Mouse } from './common/Mouse';
 
 (async () => {
     try {
@@ -22,6 +23,8 @@ import { AudioReceiver } from './Audio/AudioReceiver';
 		const port = 9090;
 
 		await Keyboard.init();
+		await Mouse.init();
+
 		SocketServer.init(httpServer);
 
 		httpServer.listen(port, (): void => {
