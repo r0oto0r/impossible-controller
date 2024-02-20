@@ -9,20 +9,20 @@ function Main(): JSX.Element {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<React.Fragment />} />
-				<Route path="/livelink" element={
+				<Route path="/frontend/" element={<React.Fragment />} />
+				<Route path="/frontend/livelink" element={
 					<React.Fragment>
 						<KeysPressedView />
 						<LiveLinkCommand />
 					</React.Fragment>
 				} />
-				<Route path="/audio" element={
+				<Route path="/frontend/audio" element={
 					<React.Fragment>
 						<KeysPressedView />
 						<AudioCommand />
 					</React.Fragment>
 				} />
-				<Route path="/settings" element={
+				<Route path="/frontend/settings" element={
 					<Settings />
 				} />
 			</Routes>
