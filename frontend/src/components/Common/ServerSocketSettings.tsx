@@ -4,7 +4,7 @@ import { getServer, setServerAddress } from "../../slices/serverSlice";
 import { SocketClient } from "../../socket/SocketClient";
 
 function ServerSocketSettings(): JSX.Element {
-	const { impossibleController: { address, connected } } = useAppSelector((state) => getServer(state));
+	const { address, connected } = useAppSelector((state) => getServer(state));
 	const dispatch = useAppDispatch();
 
 	const handleServerAddressInputChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
