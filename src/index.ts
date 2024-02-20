@@ -37,7 +37,7 @@ import { Mouse } from './common/Mouse';
 		await AudioKeyBindings.init(app);
 		AudioReceiver.init();
 
-		app.use('/', express.static(path.join(__dirname, '../frontend/build')));
+		app.use('/frontend/', express.static(path.join(__dirname, '../frontend/build')));
     } catch (error: any) {
         Log.error(`Error occured: ${error}`);
     }
