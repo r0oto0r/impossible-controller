@@ -31,13 +31,13 @@ import { Mouse } from './common/Mouse';
             Log.info(`HTTP Server accepting connections on port ${port}`);
         });
 
-		app.use('/', express.static(path.join(__dirname, '../frontend/build')));
-
 		await LiveLinkKeyBindings.init(app);
 		LiveLinkReceiver.init();
 
 		await AudioKeyBindings.init(app);
 		AudioReceiver.init();
+
+		app.use(express.static(path.join(__dirname, '../frontend/build')));
     } catch (error: any) {
         Log.error(`Error occured: ${error}`);
     }

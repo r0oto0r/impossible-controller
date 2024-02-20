@@ -24,6 +24,71 @@ function AudioVisualizer(): JSX.Element {
 	cancelAnimationFrame(rafId.current);
 
 	useEffect(() => {
+		const calculateRMS = (dataUint8Array: Uint8Array) => {
+			const sq = dataUint8Array.map((v) => (v * v));
+			const s = sq.reduce((a, v) => (a + v));
+			return Math.sqrt(s / dataUint8Array.length);
+		}
+	
+		const tick = () => {
+			if(analyser.current) {
+				const now = performance.now();
+				duration.current = now - lastTick.current;
+				lastTick.current = now;
+				byteTimeDomainData.current && analyser.current.getByteTimeDomainData(byteTimeDomainData.current);
+				floatTimeDomainData.current && analyser.current.getFloatTimeDomainData(floatTimeDomainData.current);
+				byteFrequencyData.current && analyser.current.getByteFrequencyData(byteFrequencyData.current);
+				floatFrequencyData.current && analyser.current.getFloatFrequencyData(floatFrequencyData.current);
+				draw();
+				const currentPitch = detectPitch.current(floatTimeDomainData.current);
+				const currentPeakFrequency = Math.max.apply(null, Array.from(byteTimeDomainData.current));
+				const currentRMS = calculateRMS(byteTimeDomainData.current);
+				dispatch(setAudioInfo({ currentDuration: duration.current, currentPitch, currentPeakFrequency, currentRMS } as AudioInfoState));
+				rafId.current = requestAnimationFrame(tick);
+			}
+		}
+	
+		const draw = () => {
+			const canvas = canvasRef.current;
+			if(canvas) {
+				const { height, width } = canvas;
+				const context = canvas.getContext('2d');
+				if(context) {
+					if(byteTimeDomainData) {
+						let x = 0;
+						const sliceWidth = width / byteTimeDomainData.current.length;
+	
+						context.lineCap = 'round';
+						context.lineWidth = 2;
+						context.strokeStyle = '#C71585';
+						context.clearRect(0, 0, width, height);
+	
+						context.beginPath();
+	
+						if(byteTimeDomainData.current.length > 0) {
+							for(let i = 0; i < byteTimeDomainData.current.length; i++) {
+								const v = byteTimeDomainData.current[i] / 128.0;
+								const y = v * canvas.height / 2;
+	
+								if(i === 0) {
+									context.moveTo(x, y);
+								} else {
+									context.lineTo(x, y);
+								}
+	
+								x += sliceWidth;
+							}
+						} else {
+							context.moveTo(0, canvas.height / 2);
+						}
+	
+						context.lineTo(canvas.width, canvas.height / 2);
+						context.stroke();
+					}
+				}			
+			}
+		}
+
 		if(mediaAudio && recording) {
 			const source = audioContext.current.createMediaStreamSource(mediaAudio);
 
@@ -43,72 +108,7 @@ function AudioVisualizer(): JSX.Element {
 		} else {
 			draw();
 		}
-	}, [mediaAudio, recording]);
-
-	const draw = () => {
-		const canvas = canvasRef.current;
-		if(canvas) {
-			const { height, width } = canvas;
-			const context = canvas.getContext('2d');
-			if(context) {
-				if(byteTimeDomainData) {
-					let x = 0;
-					const sliceWidth = width / byteTimeDomainData.current.length;
-
-					context.lineCap = 'round';
-					context.lineWidth = 2;
-					context.strokeStyle = '#C71585';
-					context.clearRect(0, 0, width, height);
-
-					context.beginPath();
-
-					if(byteTimeDomainData.current.length > 0) {
-						for(let i = 0; i < byteTimeDomainData.current.length; i++) {
-							const v = byteTimeDomainData.current[i] / 128.0;
-							const y = v * canvas.height / 2;
-
-							if(i === 0) {
-								context.moveTo(x, y);
-							} else {
-								context.lineTo(x, y);
-							}
-
-							x += sliceWidth;
-						}
-					} else {
-						context.moveTo(0, canvas.height / 2);
-					}
-
-					context.lineTo(canvas.width, canvas.height / 2);
-					context.stroke();
-				}
-			}			
-		}
-	}
-
-	const calculateRMS = (dataUint8Array: Uint8Array) => {
-		const sq = dataUint8Array.map((v) => (v * v));
-		const s = sq.reduce((a, v) => (a + v));
-		return Math.sqrt(s / dataUint8Array.length);
-	}
-
-	const tick = () => {
-		if(analyser.current) {
-			const now = performance.now();
-			duration.current = now - lastTick.current;
-			lastTick.current = now;
-			byteTimeDomainData.current && analyser.current.getByteTimeDomainData(byteTimeDomainData.current);
-			floatTimeDomainData.current && analyser.current.getFloatTimeDomainData(floatTimeDomainData.current);
-			byteFrequencyData.current && analyser.current.getByteFrequencyData(byteFrequencyData.current);
-			floatFrequencyData.current && analyser.current.getFloatFrequencyData(floatFrequencyData.current);
-			draw();
-			const currentPitch = detectPitch.current(floatTimeDomainData.current);
-			const currentPeakFrequency = Math.max.apply(null, Array.from(byteTimeDomainData.current));
-			const currentRMS = calculateRMS(byteTimeDomainData.current);
-			dispatch(setAudioInfo({ currentDuration: duration.current, currentPitch, currentPeakFrequency, currentRMS } as AudioInfoState));
-			rafId.current = requestAnimationFrame(tick);
-		}
-	}
+	}, [mediaAudio, recording, dispatch]);
 
 	return (
 		<div className="w3-container w3-margin w3-center">
