@@ -56,5 +56,5 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/matter-js": "^0.18.2"
   },
-  "homepage": "./frontend"
+  "homepage": "/frontend"
 }
