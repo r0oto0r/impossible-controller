@@ -9,25 +9,17 @@ import Pitchfinder from "pitchfinder";
 
 const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-const FLUTE_THRESHOLD_RMS = 0.5;
+const FLUTE_THRESHOLD_RMS = 7;
 const FLUTE_LOUDNESS_THRESHOLD = 200;
 
-const DRUM_HIT_THRESHOLD_FREQUENCY = 128;
-const DRUM_HIT_THRESHOLD_RMS = 1;
-const DRUM_LOUDNESS_THRESHOLD = 150;
-
-const detectDrumHit = (currentPeakFrequency: number, currentRMS: number) => {
-	if(currentPeakFrequency > DRUM_HIT_THRESHOLD_FREQUENCY && currentRMS > DRUM_HIT_THRESHOLD_RMS) {
-		return true;
-	}
-	return false;
-}
+const DRUM_LOUDNESS_THRESHOLD = 180;
+const DRUM_PITCH_THRESHOLD = 0.1;
 
 function AudioAnalyzer(): JSX.Element {
 	const dispatch = useAppDispatch();
 	const { extraMenusHidden } = useAppSelector((state) => getSettings(state));
 	const { mediaAudio, recording, mode } = useAppSelector((state) => getAudio(state));
-	const [currentAudioValues, setCurrentAudioValues ] = React.useState<{
+	const [ currentAudioValues, setCurrentAudioValues ] = React.useState<{
 		peakFrequency: number,
 		rms: number,
 		pitch: number,
@@ -41,8 +33,10 @@ function AudioAnalyzer(): JSX.Element {
 	const octave = useRef<number>(0);
 	const key = useRef<string>('NONE');
 	const lastKey = useRef<string>('NONE');
+	const lastOctave = useRef<number>(0);
 	const previouslyDrumHit = useRef<boolean>(false);
 	const currentlyDrumHit = useRef<boolean>(false);
+	const lastTimeDrumHit = useRef<number>(0);
 	const timeout = useRef<NodeJS.Timeout>();
 	const audioContext = useRef<AudioContext>(new window.AudioContext());
 	const analyser = useRef<AnalyserNode>()
@@ -51,8 +45,6 @@ function AudioAnalyzer(): JSX.Element {
 	const byteFrequencyData = useRef<Uint8Array>(new Uint8Array());
 	const floatFrequencyData = useRef<Float32Array>(new Float32Array());
 	const rafId = useRef<number>(0);
-	const lastTick  = useRef<number>(performance.now());
-	const duration  = useRef<number>(0);
 	const detectPitch = useRef<PitchDetector>(Pitchfinder.AMDF());
 
 	useEffect(() => {
@@ -60,13 +52,34 @@ function AudioAnalyzer(): JSX.Element {
 			const sq = dataUint8Array.map((v) => (v * v));
 			const s = sq.reduce((a, v) => (a + v));
 			return Math.sqrt(s / dataUint8Array.length);
-		}
+		};
+
+		const detectKey = (currentPitch: number, currentRMS: number, currentLoudness: number) => {
+			if(currentPitch !== null && currentLoudness > FLUTE_LOUDNESS_THRESHOLD && currentRMS > FLUTE_THRESHOLD_RMS) {
+				// Convert the frequency to a musical pitch. source https://stackoverflow.com/questions/41174545/pitch-detection-node-js
+				// c = 440.0(2^-4.75)
+				const c0 = 440.0 * Math.pow(2.0, -4.75);
+				// h = round(12log2(f / c))
+				const halfStepsBelowMiddleC = Math.round(12.0 * Math.log2(currentPitch / c0));
+				// o = floor(h / 12)
+				return {
+					octave: Math.floor(halfStepsBelowMiddleC / 12.0),
+					key: keys[Math.floor(halfStepsBelowMiddleC % 12)]
+				};
+			} else {
+				return {
+					octave: 0,
+					key: 'NONE'
+				};
+			}
+		};
+
+		const detectDrumHit = (currentPitch: number, currentPeakFrequency: number, currentLoudness: number) => {
+			return currentPitch < DRUM_PITCH_THRESHOLD && currentLoudness > DRUM_LOUDNESS_THRESHOLD;
+		};
 
 		const tick = () => {
 			if(analyser.current) {
-				const now = performance.now();
-				duration.current = now - lastTick.current;
-				lastTick.current = now;
 				byteTimeDomainData.current && analyser.current.getByteTimeDomainData(byteTimeDomainData.current);
 				floatTimeDomainData.current && analyser.current.getFloatTimeDomainData(floatTimeDomainData.current);
 				byteFrequencyData.current && analyser.current.getByteFrequencyData(byteFrequencyData.current);
@@ -82,54 +95,36 @@ function AudioAnalyzer(): JSX.Element {
 				if(!currentLoudness) currentLoudness = 0;
 
 				if(mode === AudioMode.FLUTE) {
-					if(currentPitch !== null && currentLoudness > FLUTE_LOUDNESS_THRESHOLD && currentRMS > FLUTE_THRESHOLD_RMS) {
-						// Convert the frequency to a musical pitch. source https://stackoverflow.com/questions/41174545/pitch-detection-node-js
-						// c = 440.0(2^-4.75)
-						const c0 = 440.0 * Math.pow(2.0, -4.75);
-						// h = round(12log2(f / c))
-						const halfStepsBelowMiddleC = Math.round(12.0 * Math.log2(currentPitch / c0));
-						// o = floor(h / 12)
-						octave.current = Math.floor(halfStepsBelowMiddleC / 12.0);
-						key.current = keys[Math.floor(halfStepsBelowMiddleC % 12)];
-					} else {
-						octave.current = 0;
-						key.current = 'NONE';
+					const { key: currentKey, octave: currentOctave } = detectKey(currentPitch, currentRMS, currentLoudness);
+					if(currentKey !== key.current || currentOctave !== octave.current) {
+						key.current = currentKey;
+						octave.current = currentOctave;
 					}
-		
-					if(lastKey.current !== key.current) {
+
+					if(lastKey.current !== key.current || lastOctave.current !== octave.current) {
+						console.log(`Key: ${key.current}, Octave: ${octave.current}`);
 						SocketClient.emit('FLUTE_AUDIO_DATA', {
 							key: key.current,
 							octave: octave.current
 						});
 						dispatch(setAudioKey(key.current));
 						lastKey.current = key.current;
+						lastOctave.current = octave.current;
 					}
 				} else {
-					currentlyDrumHit.current = detectDrumHit(currentPeakFrequency, currentRMS);
-					if(currentLoudness > DRUM_LOUDNESS_THRESHOLD) {
-						if(currentlyDrumHit.current) {
-							if(timeout.current) {
-								clearTimeout(timeout.current);
-							}
-		
+					currentlyDrumHit.current = detectDrumHit(currentPitch, currentPeakFrequency, currentLoudness);
+					if(currentlyDrumHit.current && !previouslyDrumHit.current) {
+						const currentTime = Date.now();
+						if(currentTime - lastTimeDrumHit.current >= 30) {
+							dispatch(setDrumHit(true));
+							lastTimeDrumHit.current = currentTime;
+							clearTimeout(timeout.current);
 							timeout.current = setTimeout(() => {
-								timeout.current && clearTimeout(timeout.current);
-								previouslyDrumHit.current = false;
-								SocketClient.emit('DRUM_AUDIO_DATA', {
-									hit: false
-								});
 								dispatch(setDrumHit(false));
-							}, currentlyDrumHit.current ? 50 : 500);
-		
-							if(!previouslyDrumHit.current && currentlyDrumHit.current) {
-								previouslyDrumHit.current = true;
-								SocketClient.emit('DRUM_AUDIO_DATA', {
-									hit: true
-								});
-								dispatch(setDrumHit(true));
-							}
+							}, 30);
 						}
 					}
+					previouslyDrumHit.current = currentlyDrumHit.current;
 				}
 
 				dispatch(setByteTimeDomainData(byteTimeDomainData?.current));
@@ -195,32 +190,32 @@ function AudioAnalyzer(): JSX.Element {
 						<div className="w3-third">
 						<div className="value-container">
 							<span className="label">Drum Hit: </span>
-							<span className="value">{currentlyDrumHit.current.toString()}</span>
+							<span className="value">{currentlyDrumHit.current ? 1 : 0}</span>
 						</div>
 					</div>
 				</React.Fragment>}
 				<div className="w3-third">
 					<div className="value-container">
 						<span className="label">Frequency: </span>
-						<span className="value">{currentAudioValues.peakFrequency.toFixed(0)}</span>
+						<span className="value">{currentAudioValues.peakFrequency.toFixed(2)}</span>
 					</div>
 				</div>
 				<div className="w3-third">
 					<div className="value-container">
 						<span className="label">RMS: </span>
-						<span className="value">{currentAudioValues.rms.toFixed(0)}</span>
+						<span className="value">{currentAudioValues.rms.toFixed(2)}</span>
 					</div>
 				</div>
 				<div className="w3-third">
 					<div className="value-container">
 						<span className="label">Pitch: </span>
-						<span className="value">{currentAudioValues.pitch.toFixed(0)}</span>
+						<span className="value">{currentAudioValues.pitch.toFixed(2)}</span>
 					</div>
 				</div>
 				<div className="w3-third">
 					<div className="value-container">
 						<span className="label">Loudness: </span>
-						<span className="value">{currentAudioValues.loudness.toFixed(0)}</span>
+						<span className="value">{currentAudioValues.loudness.toFixed(2)}</span>
 					</div>
 				</div>
 			</div>

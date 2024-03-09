@@ -32,6 +32,8 @@ export const audioSlice = createSlice({
 		stopRecording: (state) => {
 			state.recording = false;
 			state.mediaAudio = undefined;
+			state.deviceLabel = 'Press Start';
+			state.drumHit = false;
 		},
 		setDeviceLabel: (state, action: PayloadAction<string>) => {
 			state.deviceLabel = action.payload;

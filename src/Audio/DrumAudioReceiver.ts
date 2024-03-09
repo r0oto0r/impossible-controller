@@ -29,7 +29,7 @@ export class DrumAudioReceiver {
 
 		this.drumAudioData = drumAudioData;
 
-		if(!this.drumAudioData) {
+		if(!this.drumAudioData || !drumAudioData.hit) {
 			this.clearAllKeys();
 			return;
 		}
@@ -43,8 +43,6 @@ export class DrumAudioReceiver {
 					this.keyDown(keyBinding.keyCode);
 				}
 			}
-		} else {
-			this.clearAllKeys();
 		}
 	}
 

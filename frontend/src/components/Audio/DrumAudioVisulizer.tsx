@@ -2,16 +2,23 @@ import React, { useEffect } from "react";
 import { useAppSelector } from "../../hooks/general";
 import { getAudio } from "../../slices/audioSlice";
 
-const maxGifs = 10;
-const tenorAppKey = 'STUPID ME';
-const tenorTags = ['hit', 'bang', 'pow', 'smack', 'whack', 'thud', 'thump', 'punch', 'slap', 'smash', 'crash', 'boom', 'bang', 'bop', 'clap', 'clunk', 'crunch', 'pop', 'smack', 'snap'];
+const maxGifs = 20;
+const minGifs = 10;
+const tenorAppKey = 'AIzaSyDRwWBmJBR3R409K_RyE-7wypCUXABXyUQ';
+const tenorTags = ['hit', 'bang', 'pow', 'smack', 'whack', 'thud', 'thump', 'punch', 'slap', 'smash', 'crash', 'boom', 'bop', 'clap', 'clunk', 'crunch', 'pop', 'snap'];
 
 function DrumAudioVisulizer(): JSX.Element {
 	const { drumHit } = useAppSelector((state) => getAudio(state));
 	const gifImgRefArray = React.useRef<{ div: HTMLImageElement, gif: { url: string, duration: number } }[]>([]);
 	const gifDivRef = React.useRef<HTMLDivElement>(null);
-
-	console.log('drumHit', drumHit);
+	const currentRunningGifRef = React.useRef<{ 
+		div: HTMLImageElement,
+		gif: {
+			url: string,
+			duration: number
+		},
+		timeOut: NodeJS.Timeout
+	} | null>(null);
 
 	useEffect(() => {
 		let timeout: NodeJS.Timeout | null = null;
@@ -20,7 +27,7 @@ function DrumAudioVisulizer(): JSX.Element {
 			min = Math.ceil(min);
 			max = Math.floor(max);
 			return Math.floor(Math.random() * (max - min) + min);
-		}
+		};
 
 		const getRandomGifs = async (count: number = 1, query?: string, contentFilter: string = 'medium', media_filter: string = 'gif'): Promise<{url: string; duration: number; }[] | undefined> => {
 			if (!query) {
@@ -40,7 +47,7 @@ function DrumAudioVisulizer(): JSX.Element {
 			}
 
 			return undefined;
-		}
+		};
 
 		const appendGif = (tenorGif: { url: string; duration: number; }) => {
 			if(gifDivRef.current) {
@@ -57,10 +64,10 @@ function DrumAudioVisulizer(): JSX.Element {
 					}
 				});
 			}
-		}
+		};
 
 		timeout = setInterval(async () => {
-			if(gifImgRefArray.current.length < maxGifs) {
+			if(gifImgRefArray.current.length <= minGifs) {
 				const missingGifs = maxGifs - gifImgRefArray.current.length;
 				const gifs = await getRandomGifs(missingGifs);
 				if(gifs) {
@@ -80,26 +87,28 @@ function DrumAudioVisulizer(): JSX.Element {
 			if(timeout) {
 				clearTimeout(timeout);
 			}
-		}
+		};
 	}, []);
 
 	useEffect(() => {
 		if(drumHit) {
-			gifImgRefArray?.current.forEach((gif) => { 
-				if(!gif.div.hidden) {
-					if(gifDivRef.current) {
-						gifDivRef.current.removeChild(gif.div);
-					}
-				}
-			});
+			if(currentRunningGifRef.current && gifDivRef.current) {
+				clearTimeout(currentRunningGifRef.current.timeOut);
+				gifDivRef.current.removeChild(currentRunningGifRef.current.div);
+				currentRunningGifRef.current = null;
+			}
 			const gif = gifImgRefArray?.current.pop();
 			if(gif) {
 				gif.div.hidden = false;
-				setTimeout(() => {
-					if(gifDivRef.current) {
-						gifDivRef.current.removeChild(gif.div);
-					}
-				}, gif.gif.duration * 1000);
+				currentRunningGifRef.current = {
+					...gif,
+					timeOut: setTimeout(() => {
+						if(gifDivRef.current) {
+							gifDivRef.current.removeChild(gif.div);
+							currentRunningGifRef.current = null;
+						}
+					}, gif.gif.duration > 0 ? gif.gif.duration * 1000 : 1000)
+				};
 			}
 		}
 	}, [drumHit]);
