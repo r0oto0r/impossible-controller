@@ -3,7 +3,7 @@ import { useAppSelector } from "../../hooks/general";
 import { getAudio } from "../../slices/audioSlice";
 
 const maxGifs = 10;
-const tenorAppKey = 'AIzaSyDRwWBmJBR3R409K_RyE-7wypCUXABXyUQ';
+const tenorAppKey = 'STUPID ME';
 const tenorTags = ['hit', 'bang', 'pow', 'smack', 'whack', 'thud', 'thump', 'punch', 'slap', 'smash', 'crash', 'boom', 'bang', 'bop', 'clap', 'clunk', 'crunch', 'pop', 'smack', 'snap'];
 
 function DrumAudioVisulizer(): JSX.Element {
