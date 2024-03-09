@@ -3,6 +3,10 @@ import http from 'http';
 import { Log } from './Log';
 import { Keyboard } from './Keyboard';
 import { Mouse } from './Mouse';
+import { FluteAudioReceiver } from '../Audio/FluteAudioReceiver';
+import { DrumAudioReceiver } from '../Audio/DrumAudioReceiver';
+import { LeapReceiver } from '../Leap/LeapReceiver';
+import { CommuniQi } from '../CommuniQi/CommuniQi';
 
 export class SocketServer {
 	private static io: socketio.Server;
@@ -25,9 +29,17 @@ export class SocketServer {
 			this.clients.set(socket.id, socket);
 
 			Keyboard.onClientConnected(socket);
-			Mouse.onClientConnected(socket);
+
+			FluteAudioReceiver.onClientConnected(socket);
+			DrumAudioReceiver.onClientConnected(socket);
+			LeapReceiver.onClientConnected(socket);
+			CommuniQi.onClientConnected(socket);
 
 			socket.on('disconnect', () => {
+				FluteAudioReceiver.onClientDisconnected(socket);
+				DrumAudioReceiver.onClientDisconnected(socket);
+				LeapReceiver.onClientDisconnected(socket);
+
 				this.clients.delete(socket.id);
 				Log.info(`${socket.id} disconnected`);
 			});

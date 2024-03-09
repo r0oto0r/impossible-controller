@@ -9,8 +9,14 @@ import { LiveLinkReceiver } from './LiveLink/LiveLinkReceiver';
 import { Database } from './common/Database';
 import { LiveLinkKeyBindings } from './LiveLink/LiveLinkKeyBindings';
 import { AudioKeyBindings } from './Audio/AudioKeyBindings';
-import { AudioReceiver } from './Audio/AudioReceiver';
+import { FluteAudioReceiver } from './Audio/FluteAudioReceiver';
 import { Mouse } from './common/Mouse';
+import { LeapKeyBindings } from './Leap/LeapKeyBindings';
+import { LeapReceiver } from './Leap/LeapReceiver';
+import { DrumAudioReceiver } from './Audio/DrumAudioReceiver';
+import { YoutubeChatHandler } from './common/YoutubeChatHandler';
+import { TwitchChatHandler } from './common/TwitchChatHandler';
+import { CommuniQi } from './CommuniQi/CommuniQi';
 
 (async () => {
     try {
@@ -25,17 +31,26 @@ import { Mouse } from './common/Mouse';
 		await Keyboard.init();
 		await Mouse.init();
 
-		SocketServer.init(httpServer);
-
-		httpServer.listen(port, (): void => {
-            Log.info(`HTTP Server accepting connections on port ${port}`);
-        });
+		await YoutubeChatHandler.init(app);
+		await TwitchChatHandler.init(app);
 
 		await LiveLinkKeyBindings.init(app);
 		LiveLinkReceiver.init();
 
 		await AudioKeyBindings.init(app);
-		AudioReceiver.init();
+		FluteAudioReceiver.init();
+		DrumAudioReceiver.init();
+
+		await LeapKeyBindings.init(app);
+		LeapReceiver.init();
+
+		await CommuniQi.init(app);
+
+		SocketServer.init(httpServer);
+
+		httpServer.listen(port, (): void => {
+            Log.info(`HTTP Server accepting connections on port ${port}`);
+        });
 
 		app.use(express.static(path.join(__dirname, '../frontend/build')));
 		app.get('*', (_, res) => {

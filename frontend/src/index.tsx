@@ -5,13 +5,11 @@ import reportWebVitals from './reportWebVitals';
 import './index.css';
 import './w3.css'
 import './fonts/fonts.css';
-import { SocketClient } from './socket/SocketClient';
-
-SocketClient.init();
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+	document.getElementById('root') as HTMLElement
 );
+
 root.render(
 	<React.StrictMode>
 		<App />

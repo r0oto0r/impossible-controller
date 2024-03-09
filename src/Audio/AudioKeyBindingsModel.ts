@@ -17,26 +17,26 @@ export class AudioKeyBindingsModel {
 			Log.info(`No key bindings table found. Creating it.`);
 
 			await Database.knex.schema.createTable(AUDIO_KEY_BINDINGS_TABLE_NAME, (table) => {
-				table.string('audioCommand').notNullable();
+				table.string('command').notNullable();
 				table.string('keyCode').notNullable();
-				table.primary(['audioCommand', 'keyCode']);
+				table.primary(['command', 'keyCode']);
 			});
 		}
 	}
 
-	public static async upsertKeyBinding(keyCode: string, audioCommand: string) {
+	public static async upsertKeyBinding(keyCode: string, command: string) {
 		await Database.knex.raw(`
-			INSERT INTO ${AUDIO_KEY_BINDINGS_TABLE_NAME} (keyCode, audioCommand) VALUES (?, ?)
-			ON CONFLICT (audioCommand, keyCode) DO NOTHING
-		`, [keyCode, audioCommand]);
+			INSERT INTO ${AUDIO_KEY_BINDINGS_TABLE_NAME} (keyCode, command) VALUES (?, ?)
+			ON CONFLICT (command, keyCode) DO NOTHING
+		`, [keyCode, command]);
 	}
 
 	public static async getKeyBindings() {
 		return await Database.knex(AUDIO_KEY_BINDINGS_TABLE_NAME).select();
 	}
 
-	public static async deleteKeyBinding(audioCommand: string, keyCode: string) {
-		await Database.knex(AUDIO_KEY_BINDINGS_TABLE_NAME).where({ audioCommand, keyCode }).delete();
+	public static async deleteKeyBinding(command: string, keyCode: string) {
+		await Database.knex(AUDIO_KEY_BINDINGS_TABLE_NAME).where({ command, keyCode }).delete();
 	}
 
 	public static async deleteAllKeyBindings() {

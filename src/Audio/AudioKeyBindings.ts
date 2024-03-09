@@ -14,11 +14,11 @@ export enum AudioCommand {
 	A = 'A',
 	A_SHARP = 'A#',
 	B = 'B',
-	CLAP = 'CLAP'
+	DRUM_HIT = 'DRUM_HIT'
 };
 
 export interface AudioKeyBinding {
-	audioCommand: AudioCommand;
+	command: AudioCommand;
 	keyCode: string;
 };
 
@@ -34,18 +34,17 @@ export class AudioKeyBindings {
 			const { bindings } = req.body as { bindings: AudioKeyBinding[] };
 
 			for(const binding of bindings) {
-				const { audioCommand, keyCode } = binding;
-
-				await AudioKeyBindingsModel.upsertKeyBinding(keyCode, audioCommand);
+				const { command, keyCode } = binding;
+				await AudioKeyBindingsModel.upsertKeyBinding(keyCode, command);
 			}
 
 			res.json(await this.loadKeyBindings());
 		});
 
-		app.delete('/audio/key-bindings/:audioCommand/:keyCode', async (req, res) => {
-			const { audioCommand, keyCode } = req.params;
+		app.delete('/audio/key-bindings/:command/:keyCode', async (req, res) => {
+			const { command, keyCode } = req.params;
 
-			await AudioKeyBindingsModel.deleteKeyBinding(audioCommand, keyCode);
+			await AudioKeyBindingsModel.deleteKeyBinding(command, keyCode);
 
 			res.json(await this.loadKeyBindings());
 		});

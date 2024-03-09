@@ -1,27 +1,27 @@
 import React from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks/general'
-import { getServer, setServerAddress } from "../../slices/serverSlice";
 import { SocketClient } from "../../socket/SocketClient";
+import { getLeapServer, setLeapServerAddress } from "../../slices/leapServerSlice";
 
-function ServerSocketSettings(): JSX.Element {
-	const { address, connected } = useAppSelector((state) => getServer(state));
+function LeapServerSocketSettings(): JSX.Element {
+	const { address, connected } = useAppSelector((state) => getLeapServer(state));
 	const dispatch = useAppDispatch();
 
 	const handleServerAddressInputChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
-		dispatch(setServerAddress(event.target.value));
+		dispatch(setLeapServerAddress(event.target.value));
 	};
 
 	return (
 		<div className="w3-container">
 			<div className="w3-row">
 				<div className="w3-col s12">
-					<h2>Impossible Controller Socket Settings</h2>
+					<h2>Leap Server Socket Settings</h2>
 				</div>
 			</div>
 			<div className="w3-row">
 				<div className="w3-col s6">
 					<form className="w3-container" noValidate autoComplete="off">
-						<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="IC server address" value={address} onChange={handleServerAddressInputChange} />
+						<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="Leap server address" value={address} onChange={handleServerAddressInputChange} />
 					</form>
 				</div>
 				<div className="w3-col s2">
@@ -37,4 +37,4 @@ function ServerSocketSettings(): JSX.Element {
 	);
 }
 
-export default ServerSocketSettings;
+export default LeapServerSocketSettings;

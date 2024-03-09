@@ -4,36 +4,34 @@ import { KeyPressedMap } from "../common/SharedInterfaces";
 import socketio from "socket.io";
 import { AudioKeyBinding, AudioKeyBindings } from "./AudioKeyBindings";
 
-export interface AudioData {
+export interface FluteAudioData {
 	key: string;
 	octave: number;
-	clapped: boolean;
 };
 
-export class AudioReceiver {
+export class FluteAudioReceiver {
 	private static keysPressedCache: KeyPressedMap = {};
-	private static audioData: AudioData;
+	private static fluteAudioData: FluteAudioData;
 
 	public static init() {
-		Log.info("Initializing Audio Receiver");
+		Log.info("Initializing Flute Audio Receiver");
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {
-		Log.info(`Client connected: ${socket.id}`);
-		socket.on('AUDIO_DATA', this.handleAudioData);
+		socket.on('FLUTE_AUDIO_DATA', this.handleAudioData);
 	}
 
-	public static onClientDisconnected = (socket: socketio.Socket) => {
-		Log.info(`Client disconnected: ${socket.id}`);
+	public static onClientDisconnected = (_: socketio.Socket) => {
 		this.clearAllKeys();
 	}
 
-	private static handleAudioData = (audioData: AudioData) => {
-		Log.debug(`Received audio data: ${JSON.stringify(audioData)}`);
+	private static handleAudioData = (fluteAudioData: FluteAudioData) => {
+		Log.debug(`Received audio data: ${JSON.stringify(fluteAudioData)}`);
 
-		this.audioData = audioData;
+		const sameKey = this.fluteAudioData && this.fluteAudioData.key === fluteAudioData.key;
+		this.fluteAudioData = fluteAudioData;
 
-		if(!this.audioData) {
+		if(!this.fluteAudioData) {
 			this.clearAllKeys();
 			return;
 		}
@@ -41,22 +39,13 @@ export class AudioReceiver {
 		const keyBindings: Array<AudioKeyBinding> = AudioKeyBindings.getBindings();
 
 		for(const keyBinding of keyBindings) {
-			const { audioCommand, keyCode } = keyBinding;
-			if(audioData.key === audioCommand) {
+			const { command, keyCode } = keyBinding;
+			if(fluteAudioData.key === command) {
 				this.keyDown(keyCode);
 			}
 		}
 
-		if(audioData.clapped) {
-			const clapMappings = keyBindings.filter(keyBinding => keyBinding.audioCommand === 'CLAP');
-			if(clapMappings.length > 0) {
-				for(const keyBinding of clapMappings) {
-					this.keyDown(keyBinding.keyCode);
-				}
-			}
-		}
-
-		if(audioData.key === 'NONE') {
+		if(fluteAudioData.key === 'NONE' && !sameKey) {
 			this.clearAllKeys();
 		}
 	}

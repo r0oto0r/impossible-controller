@@ -2,6 +2,7 @@ import knex, { Knex } from 'knex';
 import { Log } from "./Log";
 import { LiveLinkKeyBindingsModel } from '../LiveLink/LiveLinkKeyBindingsModel';
 import { AudioKeyBindingsModel } from '../Audio/AudioKeyBindingsModel';
+import { LeapKeyBindingsModel } from '../Leap/LeapKeyBindingsModel';
 
 export const CACHE_DB_FILE = 'cache.db';
 
@@ -21,6 +22,7 @@ export class Database {
 
 		await LiveLinkKeyBindingsModel.init();
 		await AudioKeyBindingsModel.init();
+		await LeapKeyBindingsModel.init();
 
 		Log.info(`Done setting up Database`);
 	}

@@ -1,15 +1,17 @@
 import { io, Socket } from 'socket.io-client';
-import { setConnected } from '../slices/serverSlice';
 import store, { RootState } from '../store/store';
+import LeapTrackingHandler from '../components/Leap/LeapTrackingHandler';
+import { LeapServerEvent } from '../common/LeapInterfaces';
+import { setConnected } from '../slices/leapServerSlice';
 
-export class SocketClient {
+export class LeapSocketClient {
 	private static socket: Socket;
 	private static connected: boolean;
 	private static serverAddress: string;
 
 	public static init() {
 		store.subscribe(() => {
-			const { address, connected } = (store.getState() as RootState).server;
+			const { address, connected } = (store.getState() as RootState).leapServer;
 
 			let addressChanged = this.serverAddress !== address;
 			this.serverAddress = address;
@@ -52,6 +54,7 @@ export class SocketClient {
 		this.socket.on('connect', () => {
 			console.log(`connected to ${this.serverAddress}`);
 			store.dispatch(setConnected(true));
+			this.socket.on(LeapServerEvent.TRACKING, LeapTrackingHandler.processTrackingData);
 		});
 
 		this.socket.on('disconnect', () => {
@@ -67,19 +70,6 @@ export class SocketClient {
 	public static emit(messageType: string, data?: any) {
 		if(this.connected) {
 			this.socket.emit(messageType, data);
-		}
-	}
-
-	public static on(messageType: string, callback: (data: any) => void) {
-		if(this.socket) {
-			this.socket.on(messageType, callback);
-
-		}
-	}
-
-	public static off(messageType: string, callback: (data: any) => void) {
-		if(this.socket) {
-			this.socket.off(messageType, callback);
 		}
 	}
 

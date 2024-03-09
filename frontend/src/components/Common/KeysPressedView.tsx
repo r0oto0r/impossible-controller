@@ -152,7 +152,9 @@ function KeysPressedView(): JSX.Element {
 	}, [ dispatch ]);
 
 	return (
-		<div className="keyspressed" >{keysPressed.map((keyPressed: string) => FrontendKeyMap[keyPressed])}</div>
+		<div className="w3-container w3-margin w3-center">
+			<div className="keyspressed w3-center" >{keysPressed.map((keyPressed: string) => FrontendKeyMap[keyPressed])}</div>
+		</div>
 	);
 }
 
