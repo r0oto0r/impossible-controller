@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/general";
 import { setAudioKey, setByteTimeDomainData } from "../../slices/audioStreamInfoSlice";
 import { SocketClient } from "../../socket/SocketClient";
 import { getSettings } from "../../slices/settingsSlice";
-import { AudioMode, getAudio, setAudioMode, setDrumHit } from "../../slices/audioSlice";
+import { getAudio } from "../../slices/audioSlice";
 import { PitchDetector } from "pitchfinder/lib/detectors/types";
 import Pitchfinder from "pitchfinder";
 
@@ -12,13 +12,10 @@ const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const FLUTE_THRESHOLD_RMS = 7;
 const FLUTE_LOUDNESS_THRESHOLD = 200;
 
-const DRUM_LOUDNESS_THRESHOLD = 180;
-const DRUM_PITCH_THRESHOLD = 0.1;
-
 function AudioAnalyzer(): JSX.Element {
 	const dispatch = useAppDispatch();
 	const { extraMenusHidden } = useAppSelector((state) => getSettings(state));
-	const { mediaAudio, recording, mode } = useAppSelector((state) => getAudio(state));
+	const { mediaAudio, recording } = useAppSelector((state) => getAudio(state));
 	const [ currentAudioValues, setCurrentAudioValues ] = React.useState<{
 		peakFrequency: number,
 		rms: number,
@@ -34,10 +31,6 @@ function AudioAnalyzer(): JSX.Element {
 	const key = useRef<string>('NONE');
 	const lastKey = useRef<string>('NONE');
 	const lastOctave = useRef<number>(0);
-	const previouslyDrumHit = useRef<boolean>(false);
-	const currentlyDrumHit = useRef<boolean>(false);
-	const lastTimeDrumHit = useRef<number>(0);
-	const timeout = useRef<NodeJS.Timeout>();
 	const audioContext = useRef<AudioContext>(new window.AudioContext());
 	const analyser = useRef<AnalyserNode>()
 	const byteTimeDomainData = useRef<Uint8Array>(new Uint8Array());
@@ -74,10 +67,6 @@ function AudioAnalyzer(): JSX.Element {
 			}
 		};
 
-		const detectDrumHit = (currentPitch: number, currentPeakFrequency: number, currentLoudness: number) => {
-			return currentPitch < DRUM_PITCH_THRESHOLD && currentLoudness > DRUM_LOUDNESS_THRESHOLD;
-		};
-
 		const tick = () => {
 			if(analyser.current) {
 				byteTimeDomainData.current && analyser.current.getByteTimeDomainData(byteTimeDomainData.current);
@@ -94,37 +83,21 @@ function AudioAnalyzer(): JSX.Element {
 				if(!currentRMS) currentRMS = 0;
 				if(!currentLoudness) currentLoudness = 0;
 
-				if(mode === AudioMode.FLUTE) {
-					const { key: currentKey, octave: currentOctave } = detectKey(currentPitch, currentRMS, currentLoudness);
-					if(currentKey !== key.current || currentOctave !== octave.current) {
-						key.current = currentKey;
-						octave.current = currentOctave;
-					}
+				const { key: currentKey, octave: currentOctave } = detectKey(currentPitch, currentRMS, currentLoudness);
+				if(currentKey !== key.current || currentOctave !== octave.current) {
+					key.current = currentKey;
+					octave.current = currentOctave;
+				}
 
-					if(lastKey.current !== key.current || lastOctave.current !== octave.current) {
-						console.log(`Key: ${key.current}, Octave: ${octave.current}`);
-						SocketClient.emit('FLUTE_AUDIO_DATA', {
-							key: key.current,
-							octave: octave.current
-						});
-						dispatch(setAudioKey(key.current));
-						lastKey.current = key.current;
-						lastOctave.current = octave.current;
-					}
-				} else {
-					currentlyDrumHit.current = detectDrumHit(currentPitch, currentPeakFrequency, currentLoudness);
-					if(currentlyDrumHit.current && !previouslyDrumHit.current) {
-						const currentTime = Date.now();
-						if(currentTime - lastTimeDrumHit.current >= 30) {
-							dispatch(setDrumHit(true));
-							lastTimeDrumHit.current = currentTime;
-							clearTimeout(timeout.current);
-							timeout.current = setTimeout(() => {
-								dispatch(setDrumHit(false));
-							}, 30);
-						}
-					}
-					previouslyDrumHit.current = currentlyDrumHit.current;
+				if(lastKey.current !== key.current || lastOctave.current !== octave.current) {
+					console.log(`Key: ${key.current}, Octave: ${octave.current}`);
+					SocketClient.emit('FLUTE_AUDIO_DATA', {
+						key: key.current,
+						octave: octave.current
+					});
+					dispatch(setAudioKey(key.current));
+					lastKey.current = key.current;
+					lastOctave.current = octave.current;
 				}
 
 				dispatch(setByteTimeDomainData(byteTimeDomainData?.current));
@@ -157,43 +130,23 @@ function AudioAnalyzer(): JSX.Element {
 				source.disconnect();
 			}
 		}
-	}, [mediaAudio, recording, dispatch, currentlyDrumHit, mode]);
+	}, [mediaAudio, recording, dispatch]);
 
 	return (
 		<div className="w3-container  w3-margin w3-center" hidden={extraMenusHidden}>
 			<div className="w3-row-padding" style={{ display: "flex" }}>
-				<div className="w3-half">
-					<button onClick={() => dispatch(setAudioMode(AudioMode.FLUTE))} className={`w3-button ${mode === AudioMode.FLUTE ? 'w3-green' : 'w3-red'}`}>
-						Flute
-					</button>
+				<div className="w3-third">
+					<div className="value-container">
+						<span className="label">Octave: </span>
+						<span className="value">{octave.current}</span>
+					</div>
 				</div>
-				<div className="w3-half">
-					<button onClick={() => dispatch(setAudioMode(AudioMode.DRUM))} className={`w3-button ${mode === AudioMode.DRUM ? 'w3-green' : 'w3-red'}`}>
-						Drum
-					</button>
+				<div className="w3-third">
+					<div className="value-container">
+						<span className="label">Key: </span>
+						<span className="value">{key.current}</span>
+					</div>
 				</div>
-				{mode === AudioMode.FLUTE && <React.Fragment>
-					<div className="w3-third">
-						<div className="value-container">
-							<span className="label">Octave: </span>
-							<span className="value">{octave.current}</span>
-						</div>
-					</div>
-					<div className="w3-third">
-						<div className="value-container">
-							<span className="label">Key: </span>
-							<span className="value">{key.current}</span>
-						</div>
-					</div>
-				</React.Fragment>}
-				{mode === AudioMode.DRUM && <React.Fragment>
-						<div className="w3-third">
-						<div className="value-container">
-							<span className="label">Drum Hit: </span>
-							<span className="value">{currentlyDrumHit.current ? 1 : 0}</span>
-						</div>
-					</div>
-				</React.Fragment>}
 				<div className="w3-third">
 					<div className="value-container">
 						<span className="label">Frequency: </span>

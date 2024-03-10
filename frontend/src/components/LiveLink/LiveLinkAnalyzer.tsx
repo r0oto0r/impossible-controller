@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/general";
-import { LiveLinkData, getLiveLinkData, setLiveLinkData, setSelectedBlendShape } from "../../slices/liveLinkDataSlice";
+import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape } from "../../slices/liveLinkDataSlice";
 import { SocketClient } from "../../socket/SocketClient";
 import './LiveLinkAnalyzer.css';
+import { getSettings } from "../../slices/settingsSlice";
 
 export enum FaceBlendShape {
 	EyeBlinkLeft = 0,
@@ -69,8 +70,9 @@ export enum FaceBlendShape {
 };
 
 function LiveLinkAnalyzer(): JSX.Element {
+	const { extraMenusHidden } = useAppSelector((state) => getSettings(state));
+	const { liveLinkData, selectedBlendShape, avatar } = useAppSelector((state) => getLiveLinkData(state));
 	const dispatch = useAppDispatch();
-	const { liveLinkData, selectedBlendShape } = useAppSelector((state) => getLiveLinkData(state));
 
 	useEffect(() => {
 		function processLiveLinkData(liveLinkData: LiveLinkData) {
@@ -86,7 +88,7 @@ function LiveLinkAnalyzer(): JSX.Element {
 	}, [ dispatch ]);
 
 	return (
-		<div className="livelinkkeymapping">
+		<div className="livelinkkeymapping" hidden={extraMenusHidden}>
 			<div className="w3-container">	
 				<div className="w3-row-padding">
 					<div className="w3-half">
@@ -102,7 +104,18 @@ function LiveLinkAnalyzer(): JSX.Element {
 						</div>
 					</div>
 					<div className="w3-half">
-						<input className="w3-input w3-border" readOnly type="number" placeholder="0" value={selectedBlendShape && liveLinkData ? liveLinkData.blendShapes[FaceBlendShape[selectedBlendShape]] : 0}/>
+						<input className="w3-input w3-border" readOnly type="number" placeholder="0" value={selectedBlendShape && liveLinkData ? liveLinkData.blendShapes[FaceBlendShape[selectedBlendShape as keyof typeof FaceBlendShape]] : '0'} />
+					</div>
+				</div>
+				<div className="w3-row-padding">
+					<div className="w3-half">
+						<div className="w3-dropdown-hover">
+							<button className="w3-button w3-black">{avatar}</button>
+							<div className="w3-dropdown-content w3-bar-block w3-border">
+								<button onClick={() => dispatch(setAvatar('default_male'))} className="w3-bar-item w3-button">default_male</button>
+								<button onClick={() => dispatch(setAvatar('default_female'))} className="w3-bar-item w3-button">default_female</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

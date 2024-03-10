@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import { SocketClient } from "../../socket/SocketClient";
-import { LiveLinkData } from "../../slices/liveLinkDataSlice";
+import { AvatarCameraPosition, LiveLinkData, getLiveLinkData } from "../../slices/liveLinkDataSlice";
 import * as THREE from 'three';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FaceBlendShape } from "./LiveLinkAnalyzer";
+import { useAppSelector } from "../../hooks/general";
 
 const maxEyeYaw = 0.2;
 const minEyeYaw = -0.2;
@@ -14,6 +15,7 @@ const maxEyeRoll = 0.2;
 const minEyeRoll = -0.2;
 
 function LiveLinkVRM(): JSX.Element {
+	const { avatar } = useAppSelector((state) => getLiveLinkData(state));
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -24,13 +26,12 @@ function LiveLinkVRM(): JSX.Element {
 		const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
 		renderer.setSize(canvasRef.current.width, canvasRef.current.height);
 		renderer.setPixelRatio(window.devicePixelRatio);
-		renderer.setClearColor(0xfffffff, 1.0);
+		renderer.setClearColor(0x282c34, 1.0);
 		let cleared = true;
 
 		const camera = new THREE.PerspectiveCamera(30.0, canvasRef.current.width / canvasRef.current.height, 0.1, 20.0);
-		//camera.position.set(0.0, 1.45, 0.7);
-
-		camera.position.set(0.0, 1.6, 0.7);
+	
+		camera.position.set(AvatarCameraPosition[avatar].x, AvatarCameraPosition[avatar].y, AvatarCameraPosition[avatar].z);
 
 		const scene = new THREE.Scene();
 
@@ -47,7 +48,7 @@ function LiveLinkVRM(): JSX.Element {
 		});
 
 		loader.load(
-			'/avatars/Avatar3.vrm',
+			`/avatars/${avatar}.vrm`,
 			(gltf) => {
 				const vrm = gltf.userData.vrm;
 
@@ -145,10 +146,26 @@ function LiveLinkVRM(): JSX.Element {
 		return () => {
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
 		};
-	}, []);
+	}, [ avatar ]);
 
 	return (
-		<canvas width="500" height="500" ref={canvasRef} />
+		<React.Fragment>
+			<div style={{ position: 'relative', width: '800', height: '800' }}>
+				<canvas width="800" height="800" ref={canvasRef} />
+				<div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)' }}>
+					<span style={{ display: 'inline-block', width: '120px', height: '120px', border: 'solid', borderWidth: '0 16px 16px 0', borderColor: '#9c27b0', transform: 'rotate(-135deg)' }}></span> {/* Up */}
+				</div>
+				<div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)' }}>
+					<span style={{ display: 'inline-block', width: '120px', height: '120px', border: 'solid', borderWidth: '0 16px 16px 0', borderColor: '#9c27b0', transform: 'rotate(45deg)' }}></span> {/* Down */}
+				</div>
+				<div style={{ position: 'absolute', top: '50%', left: '0', transform: 'translate(-50%, -50%)' }}>
+					<span style={{ display: 'inline-block', width: '120px', height: '120px', border: 'solid', borderWidth: '0 16px 16px 0', borderColor: '#9c27b0', transform: 'rotate(135deg)' }}></span> {/* Left */}
+				</div>
+				<div style={{ position: 'absolute', top: '50%', right: '0', transform: 'translate(50%, -50%)' }}>
+					<span style={{ display: 'inline-block', width: '120px', height: '120px', border: 'solid', borderWidth: '0 16px 16px 0', borderColor: '#9c27b0', transform: 'rotate(-45deg)' }}></span> {/* Right */}
+				</div>
+			</div>
+		</React.Fragment>
 	);
 }
 

@@ -6,6 +6,7 @@ import LiveLinkCommand from "./LiveLink/LiveLinkCommand";
 import Settings from "./Common/Settings";
 import LeapHandsVisualizer from "./Leap/LeapHandsVisualizer";
 import CommuniQi from "./CommuniQi/CommuniQi";
+import Overlay from "./Overlay/Overlay";
 import { useAppDispatch } from "../hooks/general";
 import { setStarted } from "../slices/communiQiSlice";
 import { setExtraMenusHidden } from "../slices/settingsSlice";
@@ -64,6 +65,9 @@ function Main(): JSX.Element {
 							<KeysPressedView />
 							<CommuniQi />
 						</React.Fragment>
+					} />
+					<Route path="overlay" element={
+						<Overlay />
 					} />
 					<Route path="settings" element={
 						<Settings />

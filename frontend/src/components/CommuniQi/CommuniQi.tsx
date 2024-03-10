@@ -6,12 +6,12 @@ import './CommuniQi.css';
 
 export const CommuniQiHearts = ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤎', '🤍'];
 export const CommuniQiBrokenHeart = '💔';
+export const maxPoolSize = 50;
 
 function CommuniQi(): JSX.Element {
 	const [powerPoolSize, setPowerPoolSize] = useState<number | null>(null);
 	const poolDivRef = React.useRef<HTMLDivElement>(null);
 	const { started } = useAppSelector((state) => getCommuniQi(state));
-	const maxPoolSize = 50;
 
 	useEffect(() => {
 		const createPowerBubble = () => {
@@ -68,7 +68,7 @@ function CommuniQi(): JSX.Element {
 		const green = Math.round((39 * fillPercentage) / 100);
 		const blue = Math.round(176 - (176 * fillPercentage) / 100);
 
-		return `linear-gradient(0deg, rgb(${red}, ${green}, ${blue}), #282c34)`;
+		return `linear-gradient(0deg, rgb(${red}, ${green}, ${blue}), transparent)`;
 	};
 
 	const calculateSize = () => {

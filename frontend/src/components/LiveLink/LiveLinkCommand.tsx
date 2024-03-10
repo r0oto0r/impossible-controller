@@ -5,8 +5,10 @@ import LiveLinkAnalyzer from "./LiveLinkAnalyzer";
 function LiveLinkCommand(): JSX.Element {
 	return (
 		<React.Fragment>
-			<LiveLinkVRM />
-			<LiveLinkAnalyzer />
+			<div className="w3-display-middle">
+				<LiveLinkVRM />
+				<LiveLinkAnalyzer />
+			</div>
 		</React.Fragment>
 	);
 };
