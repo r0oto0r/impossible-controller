@@ -28,8 +28,12 @@ export class Mouse {
 		Log.info(`Mouse initialized`);
 	}
 
-	private static generateHIDMessage(x: number, y: number): string {
-		return `${String.fromCharCode(0)}${String.fromCharCode(x)}${String.fromCharCode(y)}`;
+	private static generateHIDMessage(x: number, y: number): Buffer {
+		const buffer = Buffer.alloc(3);
+		buffer.writeUInt8(0, 0);
+		buffer.writeInt8(x, 1);
+		buffer.writeInt8(y, 2);
+		return buffer;
 	}
 
 	public static move(x: number, y: number) {
