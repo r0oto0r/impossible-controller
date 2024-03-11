@@ -28,6 +28,23 @@ export class Mouse {
 	}
 
 	public static move(x: number, y: number) {
+		const hidMouseXMax = 127;
+		const hidMouseYMax = 127;
+		const hidMouseXMin = -127;
+		const hidMouseYMin = -127;
+
+		if(x > hidMouseXMax) {
+			x = hidMouseXMax;
+		} else if(x < hidMouseXMin) {
+			x = hidMouseXMin;
+		}
+
+		if(y > hidMouseYMax) {
+			y = hidMouseYMax;
+		} else if(y < hidMouseYMin) {
+			y = hidMouseYMin;
+		}
+		
 		if(!this.powerLastUsed || (new Date().getTime() - this.powerLastUsed.getTime()) > 3000) {
 			this.powerLastUsed = undefined;
 			const powerUsed = CommuniQi.usePower();
