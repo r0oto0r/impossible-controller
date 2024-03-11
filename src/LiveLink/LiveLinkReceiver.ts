@@ -97,7 +97,7 @@ export class LiveLinkReceiver {
 	}
 
 	private static moveMouse = (data: { x: number, y: number }) => {
-		Mouse.move(data.x * 10, data.y * 10);
+		Mouse.move(data.x * 100, data.y * 100);
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {

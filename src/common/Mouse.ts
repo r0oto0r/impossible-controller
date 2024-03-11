@@ -47,7 +47,15 @@ export class Mouse {
 		} else if(y < hidMouseYMin) {
 			y = hidMouseYMin;
 		}
-		
+
+		if(x === -0) {
+			x = 0;
+		}
+
+		if(y === -0) {
+			y = 0;
+		}
+
 		if(!this.powerLastUsed || (new Date().getTime() - this.powerLastUsed.getTime()) > 3000) {
 			this.powerLastUsed = undefined;
 			const powerUsed = CommuniQi.usePower();
