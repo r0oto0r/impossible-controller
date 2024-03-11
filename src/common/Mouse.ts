@@ -28,6 +28,9 @@ export class Mouse {
 	}
 
 	public static move(x: number, y: number) {
+		x = Math.round(x * 100) / 100;
+		y = Math.round(y * 100) / 100;
+
 		const hidMouseXMax = 127;
 		const hidMouseYMax = 127;
 		const hidMouseXMin = -127;
