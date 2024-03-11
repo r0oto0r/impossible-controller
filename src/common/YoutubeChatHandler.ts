@@ -61,6 +61,10 @@ export class YoutubeChatHandler {
 
 	private static syncChat = async () => {
 		try {
+			if(this.syncTimer) {
+				clearTimeout(this.syncTimer);
+			}
+
 			const response = await this.youtube.liveChatMessages.list({
 				liveChatId: this.liveId,
 				part: ['id', 'snippet', 'authorDetails'],
@@ -69,14 +73,12 @@ export class YoutubeChatHandler {
 	
 			const { data: { nextPageToken, items }} = response;
 			let { pollingIntervalMillis } = response.data;
-			Log.debug(`Youtube chat sync polling interval: ${pollingIntervalMillis}ms`);
 			let totalDelay = 0;
 			let timeOfLastMessage;
 	
 			if(!this.nextPageToken) {
 				this.nextPageToken = nextPageToken;
 			} else {
-				Log.debug(`Youtube chat sync: ${items.length} messages`);
 				for(let i = 0; i < items.length; i++) {
 					if(items[i].authorDetails.displayName === 'Nightbot' || items[i].authorDetails.displayName === 'nightbot') {
 						continue;
@@ -96,8 +98,7 @@ export class YoutubeChatHandler {
 				}
 				this.nextPageToken = nextPageToken;
 			}
-	
-			Log.debug(`Youtube chat sync delay: ${pollingIntervalMillis - totalDelay}ms`);
+
 			this.syncTimer = setTimeout(this.syncChat, pollingIntervalMillis - totalDelay);
 		} catch (error) {
 			Log.error(`Youtube chat sync error: ${error}`);

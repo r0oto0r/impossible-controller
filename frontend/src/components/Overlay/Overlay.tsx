@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import CommuniQi, { maxPoolSize } from '../CommuniQi/CommuniQi';
 import { SocketClient } from '../../socket/SocketClient';
+import KeysPressedView from '../Common/KeysPressedView';
 
 const maxGifs = 20;
 const minGifs = 10;
 const tenorAppKey = 'AIzaSyDRwWBmJBR3R409K_RyE-7wypCUXABXyUQ';
-const tenorTags = ['lol', 'rofl', 'smirk', 'smile', 'grin', 'laugh', 'chuckle', 'giggle', 'snicker', 'cackle', 'guffaw', 'titter', 'teehee', 'snort', 'chortle', 'hehe', 'haha', 'hohoho', 'hahaha', 'hohohoho'];
+const tenorTags = ['lol', 'rofl', 'smirk', 'smile', 'grin', 'laugh', 'chuckle', 'giggle', 'snicker', 'cackle', 'guffaw', 'titter', 'teehee', 'snort', 'chortle', 'hehe', 'haha', 'hahaha'];
 
 function Overlay(): JSX.Element {
 	const [powerPoolSize, setPowerPoolSize] = useState<number | null>(null);
 	const gifImgRefArray = React.useRef<{ div: HTMLImageElement, gif: { url: string, duration: number } }[]>([]);
 	const currentRunningGifRef = React.useRef<{ 
-		div: HTMLImageElement,
-		gif: {
+		div?: HTMLImageElement,
+		gif?: {
 			url: string,
 			duration: number
 		},
@@ -24,15 +25,9 @@ function Overlay(): JSX.Element {
 
 		let timeout: NodeJS.Timeout | null = null;
 
-		const getRandomInt = (min: number, max: number): number => {
-			min = Math.ceil(min);
-			max = Math.floor(max);
-			return Math.floor(Math.random() * (max - min) + min);
-		};
-
 		const getRandomGifs = async (count: number = 1, query?: string, contentFilter: string = 'medium', media_filter: string = 'gif'): Promise<{url: string; duration: number; height: number; width: number }[] | undefined> => {
-			if (!query) {
-				query = tenorTags[getRandomInt(0, tenorTags.length)];
+			if(!query) {
+				query = tenorTags.join(',');
 			}
 			const tenorResponse = await fetch(`https://tenor.googleapis.com/v2/search?q=${query}&key=${tenorAppKey}&contentfilter=${contentFilter}&media_filter=${media_filter}&limit=${count}&random=true`);
 			const gifs = [];
@@ -42,8 +37,8 @@ function Overlay(): JSX.Element {
 					gifs.push({
 						url: result.media_formats.gif.url,
 						duration: result.media_formats.gif.duration,
-						height: result.media_formats.gif.dims[0],
-						width: result.media_formats.gif.dims[1]
+						width: result.media_formats.gif.dims[0],
+						height: result.media_formats.gif.dims[1]
 					});
 				}
 				return gifs;
@@ -55,8 +50,8 @@ function Overlay(): JSX.Element {
 		const appendGif = (tenorGif: { url: string; duration: number; height: number; width: number }) => {
 			const gif = document.createElement('img');
 			gif.style.position = 'absolute';
-			const maxTop = window.innerHeight - gif.height;
-			const maxLeft = window.innerWidth - gif.width;
+			const maxTop = window.innerHeight - tenorGif.height;
+			const maxLeft = window.innerWidth - tenorGif.width;
 			gif.style.top = `${Math.random() * maxTop}px`;
 			gif.style.left = `${Math.random() * maxLeft}px`;
 			gif.hidden = true;
@@ -89,7 +84,13 @@ function Overlay(): JSX.Element {
 		const currentGifDivRef = gifImgRefArray.current;
 		return () => {
 			currentGifDivRef?.forEach((gif) => {
-				gif.div.remove();
+				if(gif.div) {
+					try {
+						document.body.removeChild(gif.div);
+					} catch (e) {
+						console.log('failed to remove gif', e);
+					}
+				}
 			});
 
 			if(timeout) {
@@ -101,33 +102,50 @@ function Overlay(): JSX.Element {
 	}, []);
 
 	useEffect(() => {
-		const showRandomGif = () => {
-			if(currentRunningGifRef.current) {
+		console.log('powerPoolSize', powerPoolSize, maxPoolSize);
+		const spawnGif = () => {
+			const gifIndex = Math.floor(Math.random() * gifImgRefArray.current.length);
+			const gif = gifImgRefArray.current[gifIndex];
+			if(!gif || !gif.div || !gif.gif) {
+				console.log('no gif found');
+				currentRunningGifRef.current = {
+					timeOut: setTimeout(() => {
+						spawnGif();
+					}, 1000)
+				}
 				return;
 			}
-			const gif = gifImgRefArray?.current.pop();
-			if(gif) {
-				gif.div.hidden = false;
-				currentRunningGifRef.current = {
-					...gif,
-					timeOut: setTimeout(() => {
-						document.body.removeChild(gif.div);
+			gif.div.hidden = false;
+
+			currentRunningGifRef.current = {
+				div: gif.div,
+				gif: gif.gif,
+				timeOut: setTimeout(() => {
+					if(currentRunningGifRef.current && currentRunningGifRef.current.div) {
+						console.log('removing gif after timeout');
+						currentRunningGifRef.current.div.remove();
 						currentRunningGifRef.current = null;
-						if(powerPoolSize !== null && powerPoolSize >= maxPoolSize) {
-							showRandomGif();
-						}
-					}, gif.gif.duration > 0 ? gif.gif.duration * 1000 : 1000)
-				};
-			}
+						spawnGif();
+					}
+				}, gif.gif.duration === 0 ? 1000 : gif.gif.duration * 1000)
+			};
 		};
 
 		if(powerPoolSize !== null && powerPoolSize >= maxPoolSize) {
-			showRandomGif();
+			spawnGif();
+		} else {
+			if(currentRunningGifRef.current && currentRunningGifRef.current.div && currentRunningGifRef.current.timeOut) {
+				clearTimeout(currentRunningGifRef.current.timeOut);
+				console.log('removing gif before redraw');
+				currentRunningGifRef.current.div.remove();
+				currentRunningGifRef.current = null;
+			}
 		}
 	}, [powerPoolSize]);
 
 	return (
 		<React.Fragment>
+			<KeysPressedView />
 			<CommuniQi />
 		</React.Fragment>
 	);

@@ -399,8 +399,12 @@ function LeapHandsVisualizer(): JSX.Element {
 		if(rightHandHight.current > 300) {
 			(heightBarCube.current as any).material.color.setHex(0x0000ff);
 			leapHandControllerInput.rightHandAboveBar = true;
-		} else {
+		} else if (leapHandControllerInput.leftHandAboveBar === false) {
 			(heightBarCube.current as any).material.color.setHex(0xffffff);
+		}
+
+		if(leapHandControllerInput.leftHandAboveBar && leapHandControllerInput.rightHandAboveBar) {
+			(heightBarCube.current as any).material.color.setHex(0x00ff00);
 		}
 
 		if(leapHandControllerInput.leftHandClosed !== lastLeapHandsControllerInput.current.leftHandClosed ||
@@ -544,19 +548,19 @@ function LeapHandsVisualizer(): JSX.Element {
 					let otherFingerTips = handType !== LeapHandType.LEFT ? leftHandFingerTips.current : rightHandFingerTips.current;
 					const numBones = i === 0 ? 3 : 4;
 					for(let k = 1; k < numBones; k++) {
-							let fingerTip = handType === LeapHandType.LEFT ? leftHandFingerTips.current[k] : rightHandFingerTips.current[k];
-							for(let p = 0; p < otherFingerTips.length; p++) {
-								const otherFingerTip = otherFingerTips[p];
-								if(fingerTip.intersectsBox(otherFingerTip)) {
-									(curFingerBones[k] as any).material.color.setHex(0x0000FF);
-								}
+						let fingerTip = handType === LeapHandType.LEFT ? leftHandFingerTips.current[k] : rightHandFingerTips.current[k];
+						for(let p = 0; p < otherFingerTips.length; p++) {
+							const otherFingerTip = otherFingerTips[p];
+							if(fingerTip.intersectsBox(otherFingerTip)) {
+								(curFingerBones[k] as any).material.color.setHex(0x0000FF);
 							}
+						}
 
-							if(fingerTip.intersectsBox(heightBarCubeBox.current)) {
-								barTouchedLastHand.current = handType;
-								barTouched.current = true;
-								(heightBarCube.current  as any).material.color.setHex(0x0000FF);
-							}
+						if(fingerTip.intersectsBox(heightBarCubeBox.current)) {
+							barTouchedLastHand.current = handType;
+							barTouched.current = true;
+							(heightBarCube.current  as any).material.color.setHex(0x0000FF);
+						}
 					}
 				}
 			}
@@ -580,7 +584,7 @@ function LeapHandsVisualizer(): JSX.Element {
 	}
 
 	return (
-		<div className="w3-container w3-center">
+		<div className="w3-display-middle">
 			<canvas width="1920" height="1080" ref={canvasRef} />
 		</div>
 	);

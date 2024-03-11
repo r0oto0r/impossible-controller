@@ -1,7 +1,5 @@
-import { SocketServer } from "./SocketServer";
 import { Log } from "./Log";
 import fs from 'fs';
-import socketio from 'socket.io';
 import { CommuniQi } from "../CommuniQi/CommuniQi";
 
 export enum MouseMessage {

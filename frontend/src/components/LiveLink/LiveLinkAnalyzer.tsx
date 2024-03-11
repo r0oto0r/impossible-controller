@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/general";
-import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape } from "../../slices/liveLinkDataSlice";
+import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape, setMouseModeActive, setTrigger } from "../../slices/liveLinkDataSlice";
 import { SocketClient } from "../../socket/SocketClient";
 import './LiveLinkAnalyzer.css';
 import { getSettings } from "../../slices/settingsSlice";
@@ -71,12 +71,18 @@ export enum FaceBlendShape {
 
 function LiveLinkAnalyzer(): JSX.Element {
 	const { extraMenusHidden } = useAppSelector((state) => getSettings(state));
-	const { liveLinkData, selectedBlendShape, avatar } = useAppSelector((state) => getLiveLinkData(state));
+	const { liveLinkData, selectedBlendShape, avatar, mouseModeActive } = useAppSelector((state) => getLiveLinkData(state));
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
 		function processLiveLinkData(liveLinkData: LiveLinkData) {
 			dispatch(setLiveLinkData(liveLinkData));
+			dispatch(setTrigger({
+				leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < -0.2,
+				rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > 0.2,
+				upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < -0.2,
+				downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > 0.2
+			}));
 		}
 
 		SocketClient.on('LIVE_LINK_DATA', processLiveLinkData);
@@ -116,6 +122,12 @@ function LiveLinkAnalyzer(): JSX.Element {
 								<button onClick={() => dispatch(setAvatar('default_female'))} className="w3-bar-item w3-button">default_female</button>
 							</div>
 						</div>
+					</div>
+				</div>
+				<div className="w3-row-padding">
+					<div className="w3-half">
+						<input className="w3-check" type="checkbox" checked={mouseModeActive} onChange={(e) => dispatch(setMouseModeActive(e.target.checked))} />
+						<label>Mouse Mode Active</label>
 					</div>
 				</div>
 			</div>

@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import KeysPressedView from "./Common/KeysPressedView";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AudioCommand from "./Audio/AudioCommand";
 import LiveLinkCommand from "./LiveLink/LiveLinkCommand";
@@ -42,27 +41,21 @@ function Main(): JSX.Element {
 				<Route path="/frontend">
 					<Route path="livelink" element={
 						<React.Fragment>
-							<KeysPressedView />
 							<LiveLinkCommand />
-							<CommuniQi />
 						</React.Fragment>
 					} />
 					<Route path="audio" element={
 						<React.Fragment>
 							<AudioCommand />
-							<CommuniQi />
 						</React.Fragment>
 					} />
 					<Route path="leap" element={
 						<React.Fragment>
-							<KeysPressedView />
 							<LeapHandsVisualizer />
-							<CommuniQi />
 						</React.Fragment>
 					} />
 					<Route path="communiqi" element={
 						<React.Fragment>
-							<KeysPressedView />
 							<CommuniQi />
 						</React.Fragment>
 					} />

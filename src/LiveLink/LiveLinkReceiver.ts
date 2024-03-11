@@ -6,6 +6,8 @@ import { LiveLinkKeyBindings } from './LiveLinkKeyBindings';
 import { RemoteInfo } from 'dgram';
 import { SocketServer } from '../common/SocketServer';
 import { KeyPressedMap } from '../common/SharedInterfaces';
+import socketio from "socket.io";
+import { Mouse } from '../common/Mouse';
 
 export enum FaceBlendShape {
 	EyeBlinkLeft = 0,
@@ -94,13 +96,20 @@ export class LiveLinkReceiver {
 		serverSocket.on('message', this.handleFaceLinkMessage.bind(this));
 	}
 
+	private static moveMouse = (data: { x: number, y: number }) => {
+		Mouse.move(data.x, data.y);
+	}
+
+	public static onClientConnected = (socket: socketio.Socket) => {
+		socket.on('LIVE_LINK_TEST_MOVE_MOUSE', this.moveMouse);
+	}
+
 	private static handleFaceLinkMessage(message: Buffer, remote: RemoteInfo) {
 		try {
 			const livelinkData = LiveLinkReceiver.decode(message);
 
 			if(livelinkData) {
 				if(livelinkData.frameNumber > this.lastFrameNumber) {
-					Log.debug(`Received message from ${remote.address}:${remote.port}:\n${JSON.stringify(livelinkData)}`);
 					this.lastFrameNumber = livelinkData.frameNumber;
 
 					SocketServer.emit('LIVE_LINK_DATA', livelinkData);
@@ -128,7 +137,6 @@ export class LiveLinkReceiver {
 				}
 			} else {
 				if(Object.keys(this.keysPressedCache).length > 0) {
-					Log.debug(`No message received. Clearing all keys.`);
 					this.clearAllKeys();
 				}
 				if(this.lastFrameNumber !== 0) {
@@ -144,7 +152,6 @@ export class LiveLinkReceiver {
 	public static clearAllKeys() {
 		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 		if(keysPressed.length > 0) {
-			Log.debug(`Clearing all keys.`);
 			this.keysPressedCache = {} as KeyPressedMap;
 			Keyboard.release(keysPressed);
 		}
@@ -152,7 +159,6 @@ export class LiveLinkReceiver {
 
 	public static keyDown(code: string) {
 		if(!this.keysPressedCache[code]) {
-			Log.debug(`Web key code ${code} pressed.`);
 			this.keysPressedCache[code] = true;
 			const keysPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
 			Keyboard.press(keysPressed);
@@ -161,7 +167,6 @@ export class LiveLinkReceiver {
 
 	public static keyUp(code: string) {
 		if(this.keysPressedCache[code]) {
-			Log.debug(`Web key code ${code} released.`);
 			this.keysPressedCache[code] = undefined;
 			Keyboard.release([code]);
 		}

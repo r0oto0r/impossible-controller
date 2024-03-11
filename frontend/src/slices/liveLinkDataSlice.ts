@@ -23,10 +23,20 @@ export interface LiveLinkState {
 	liveLinkData?: LiveLinkData;
 	selectedBlendShape?: string;
 	avatar: Avatar;
+	mouseModeActive: boolean;
+	triggerLeft: boolean;
+	triggerRight: boolean;
+	triggerUp: boolean;
+	triggerDown: boolean;
 }
 
 const initialState: LiveLinkState = {
-	avatar: 'default_male'
+	avatar: 'default_male',
+	mouseModeActive: false,
+	triggerLeft: false,
+	triggerRight: false,
+	triggerUp: false,
+	triggerDown: false
 };
 
 export const liveLinkDataSlice = createSlice({
@@ -41,10 +51,24 @@ export const liveLinkDataSlice = createSlice({
 		},
 		setAvatar: (state, action: PayloadAction<Avatar>) => {
 			state.avatar = action.payload;
+		},
+		setMouseModeActive: (state, action: PayloadAction<boolean>) => {
+			state.mouseModeActive = action.payload;
+		},
+		setTrigger(state, action: PayloadAction<{
+			leftTrigger: boolean;
+			rightTrigger: boolean;
+			upTrigger: boolean;
+			downTrigger: boolean;
+		}>) {
+			state.triggerLeft = action.payload.leftTrigger;
+			state.triggerRight = action.payload.rightTrigger;
+			state.triggerUp = action.payload.upTrigger;
+			state.triggerDown = action.payload.downTrigger;
 		}
 	}
 });
 
-export const { setLiveLinkData, setSelectedBlendShape, setAvatar } = liveLinkDataSlice.actions;
+export const { setLiveLinkData, setSelectedBlendShape, setAvatar, setMouseModeActive, setTrigger } = liveLinkDataSlice.actions;
 export const getLiveLinkData = (state: RootState): LiveLinkState => state.liveLinkData;
 export default liveLinkDataSlice.reducer;

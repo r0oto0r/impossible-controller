@@ -2,11 +2,11 @@ import * as socketio from 'socket.io';
 import http from 'http';
 import { Log } from './Log';
 import { Keyboard } from './Keyboard';
-import { Mouse } from './Mouse';
 import { FluteAudioReceiver } from '../Audio/FluteAudioReceiver';
 import { DrumAudioReceiver } from '../Audio/DrumAudioReceiver';
 import { LeapReceiver } from '../Leap/LeapReceiver';
 import { CommuniQi } from '../CommuniQi/CommuniQi';
+import { LiveLinkReceiver } from '../LiveLink/LiveLinkReceiver';
 
 export class SocketServer {
 	private static io: socketio.Server;
@@ -29,6 +29,7 @@ export class SocketServer {
 			this.clients.set(socket.id, socket);
 
 			Keyboard.onClientConnected(socket);
+			LiveLinkReceiver.onClientConnected(socket);
 
 			FluteAudioReceiver.onClientConnected(socket);
 			DrumAudioReceiver.onClientConnected(socket);

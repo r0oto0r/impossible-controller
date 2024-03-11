@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppSelector, useAppDispatch } from '../../hooks/general'
-import { SocketClient } from "../../socket/SocketClient";
 import { getLeapServer, setLeapServerAddress } from "../../slices/leapServerSlice";
+import { LeapSocketClient } from "../../socket/LeapSocketClient";
 
 function LeapServerSocketSettings(): JSX.Element {
 	const { address, connected } = useAppSelector((state) => getLeapServer(state));
@@ -26,9 +26,9 @@ function LeapServerSocketSettings(): JSX.Element {
 				</div>
 				<div className="w3-col s2">
 					{connected ?
-						<button className="w3-button w3-red w3-round" onClick={() => SocketClient.disconnectFromServer()}>Disconnect</button>
+						<button className="w3-button w3-red w3-round" onClick={() => LeapSocketClient.disconnectFromServer()}>Disconnect</button>
 						:
-						<button className="w3-button w3-blue w3-round" onClick={() => SocketClient.connectToServer()}>Connect</button>
+						<button className="w3-button w3-blue w3-round" onClick={() => LeapSocketClient.connectToServer()}>Connect</button>
 					}
 				</div>
 				<div className="w3-col s4"></div>

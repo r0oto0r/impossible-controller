@@ -52,6 +52,10 @@ function CommuniQi(): JSX.Element {
 
 		SocketClient.on('COMMUNI_QI_POWER_POOL', handlePowerPool);
 
+		if(poolDivRef.current) {
+			poolDivRef.current.style.pointerEvents = 'none';
+		}
+
 		return () => {
 			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
 		};
