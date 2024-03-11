@@ -11,6 +11,11 @@ export interface MousePosition {
 	y: number;
 };
 
+const hidMouseXMax = 127;
+const hidMouseYMax = 127;
+const hidMouseXMin = -127;
+const hidMouseYMin = -127;
+
 const MOUSE = process.env.PROD ? '/dev/hidg1' : '/dev/null';
 
 export class Mouse {
@@ -28,13 +33,8 @@ export class Mouse {
 	}
 
 	public static move(x: number, y: number) {
-		x = Math.round(x * 100) / 100;
-		y = Math.round(y * 100) / 100;
-
-		const hidMouseXMax = 127;
-		const hidMouseYMax = 127;
-		const hidMouseXMin = -127;
-		const hidMouseYMin = -127;
+		x = Math.round(x);
+		y = Math.round(y);
 
 		if(x > hidMouseXMax) {
 			x = hidMouseXMax;
