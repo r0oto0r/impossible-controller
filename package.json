@@ -4,8 +4,8 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "npm run transpile && node out/index.js",
-		"transpile": "npm install && tsc"
+		"start": "npm run build && node out/index.js",
+		"build": "npm install && tsc"
 	},
 	"author": "",
 	"license": "private",
