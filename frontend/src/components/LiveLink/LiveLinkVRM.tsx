@@ -200,8 +200,8 @@ function LiveLinkVRM(): JSX.Element {
 
 	return (
 		<React.Fragment>
-			<div style={{ position: 'relative', width: '800', height: '800' }}>
-				<canvas width="800" height="800" ref={canvasRef} />
+			<div style={{ position: 'relative', width: '1000', height: '1000' }}>
+				<canvas width="1000" height="1000" ref={canvasRef} />
 				<div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)' }}>
 					<span style={{ display: 'inline-block', width: '120px', height: '120px', border: 'solid', borderWidth: '0 16px 16px 0', borderColor: triggerUp ? 'green' : '#9c27b0', transform: 'rotate(-135deg)'}}></span> {/* Up */}
 				</div>

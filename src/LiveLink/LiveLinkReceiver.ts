@@ -106,13 +106,13 @@ export class LiveLinkReceiver {
 
 	private static handleFaceLinkMessage(message: Buffer, remote: RemoteInfo) {
 		try {
-			const livelinkData = LiveLinkReceiver.decode(message);
+			const liveLinkData = LiveLinkReceiver.decode(message);
 
-			if(livelinkData) {
-				if(livelinkData.frameNumber > this.lastFrameNumber) {
-					this.lastFrameNumber = livelinkData.frameNumber;
+			if(liveLinkData) {
+				if(liveLinkData.frameNumber > this.lastFrameNumber) {
+					this.lastFrameNumber = liveLinkData.frameNumber;
 
-					SocketServer.emit('LIVE_LINK_DATA', livelinkData);
+					SocketServer.emit('LIVE_LINK_DATA', liveLinkData);
 
 					const keyBindings = LiveLinkKeyBindings.getBindings();
 
@@ -121,7 +121,7 @@ export class LiveLinkReceiver {
 							const keyBinding = keyBindings.find(keyBinding => keyBinding.keyCode === key);
 							if(keyBinding) {
 								const { faceBlendShape, maxThreshold, minThreshold } = keyBinding;
-								if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] < minThreshold || livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] > maxThreshold) {
+								if(liveLinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] < minThreshold || liveLinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] > maxThreshold) {
 									this.keyUp(key);
 								}
 							}
@@ -130,10 +130,17 @@ export class LiveLinkReceiver {
 
 					for(const keyBinding of keyBindings) {
 						const { faceBlendShape, keyCode, maxThreshold, minThreshold } = keyBinding;
-						if(livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] >= minThreshold && livelinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] <= maxThreshold) {
+						if(liveLinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] >= minThreshold && liveLinkData.blendShapes[FaceBlendShape[faceBlendShape as keyof typeof FaceBlendShape]] <= maxThreshold) {
 							this.keyDown(keyCode);
 						}
 					}
+
+					const x = liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
+					const y = liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
+
+					if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
+						this.moveMouse({ x, y });
+					};
 				}
 			} else {
 				if(Object.keys(this.keysPressedCache).length > 0) {
