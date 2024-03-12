@@ -82,7 +82,7 @@ export class CommuniQi {
 
 	private static detectHeartUnicodeEmojies = (message: string) => {
 		//return message.match(/[\u2764-\u2764]|<3|\uD83D\uDC9B/g);
-		return message.match(/[\u2764-\u2764]|<3|\uD83D\uDC9B|z|y/g);
+		return message.match(/\u2764|<3|\uD83D\uDC9B|z|y/g);
 	}
 
 	private static handleTwitchChatMessage = (channel: string, userstate: tmi.ChatUserstate, message: string, self: boolean) => {
