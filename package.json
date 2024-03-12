@@ -21,7 +21,6 @@
 	"dependencies": {
 		"cors": "^2.8.5",
 		"express": "^4.18.2",
-		"fft-64bit": "^2.0.1",
 		"google-auth-library": "^9.6.3",
 		"googleapis": "^133.0.0",
 		"knex": "^3.0.1",
