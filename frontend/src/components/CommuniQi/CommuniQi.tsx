@@ -50,6 +50,7 @@ function CommuniQi(): JSX.Element {
 			}
 		};
 
+		SocketClient.emit('JOIN_ROOM', 'COMMUNI_QI');
 		SocketClient.on('COMMUNI_QI_POWER_POOL', handlePowerPool);
 
 		if(poolDivRef.current) {
@@ -57,6 +58,7 @@ function CommuniQi(): JSX.Element {
 		}
 
 		return () => {
+			SocketClient.emit('LEAVE_ROOM', 'COMMUNI_QI');
 			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
 		};
 	}, [powerPoolSize, started])

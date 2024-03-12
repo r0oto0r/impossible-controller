@@ -47,8 +47,14 @@ export class CommuniQi {
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {
-		socket.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
-		socket.emit('COMMUNI_QI_STATUS', { started: this.started });
+		socket.on('JOIN_ROOM', (room: string) => {
+			if(room !== 'COMMUNI_QI') {
+				return;
+			}
+			socket.join(room);
+			socket.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+			socket.emit('COMMUNI_QI_STATUS', { started: this.started });
+		});
 	}
 
 	private static startCommuniQi = async () => {
@@ -58,8 +64,8 @@ export class CommuniQi {
 		this.powerRegenerationInterval = setInterval(this.regeneratePower, 5000);
 		this.started = true;
 
-		SocketServer.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
-		SocketServer.emit('COMMUNI_QI_STATUS', { started: this.started });
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_STATUS', { started: this.started });
 	}
 
 	private static stopCommuniQi = () => {
@@ -70,8 +76,8 @@ export class CommuniQi {
 		this.communiQiPowerPool = [];
 		this.started = false;
 
-		SocketServer.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
-		SocketServer.emit('COMMUNI_QI_STATUS', { started: this.started });
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_STATUS', { started: this.started });
 	}
 
 	private static detectHeartUnicodeEmojies = (message: string) => {
@@ -117,7 +123,7 @@ export class CommuniQi {
 
 		Log.debug(`Adding power from ${CommuniQiPowerSource[source]}: ${userName}`);
 
-		SocketServer.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+		SocketServer.in('COMMUNIQI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
 	};
 
 	private static regeneratePower = () => {
@@ -136,7 +142,7 @@ export class CommuniQi {
 		if(this.communiQiPowerPool.length > 0) {
 			const communiQiPower = this.communiQiPowerPool.shift();
 			Log.debug(`Using power from user: ${communiQiPower.userName} from source: ${communiQiPower.source}`);
-			SocketServer.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+			SocketServer.in('COMMUNIQI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
 			return true;
 		}
 		return false;

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
-import { getAudioStreamInfo } from "../../slices/audioStreamInfoSlice";
+import { getAudioStreamInfo, setAudioKey, setByteTimeDomainData } from "../../slices/audioStreamInfoSlice";
 import store from "../../store/store";
+import { SocketClient } from "../../socket/SocketClient";
 
 const ColorKeyMap: {
 	[key: string]: string
@@ -24,6 +25,14 @@ function AudioVisualizer(): JSX.Element {
 	const rafId = React.useRef<number>(0);
 
 	useEffect(() => {
+		SocketClient.on('connect', () => {
+			SocketClient.emit('JOIN_ROOM', 'AUDIO');
+			SocketClient.on('AUDIO_DATA', (data) => {
+				store.dispatch(setAudioKey(data.key));
+				store.dispatch(setByteTimeDomainData(new Uint8Array(data.byteTimeDomainData)));
+			});
+		});
+
 		const draw = () => {
 			const canvas = canvasRef.current;
 			const byteTimeDomainData = getAudioStreamInfo(store.getState()).byteTimeDomainData;

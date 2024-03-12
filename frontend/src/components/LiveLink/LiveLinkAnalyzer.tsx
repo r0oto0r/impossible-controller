@@ -85,9 +85,11 @@ function LiveLinkAnalyzer(): JSX.Element {
 			}));
 		}
 
+		SocketClient.emit('JOIN_ROOM', 'LIVE_LINK');
 		SocketClient.on('LIVE_LINK_DATA', processLiveLinkData);
 
 		return () => {
+			SocketClient.emit('LEAVE_ROOM', 'LIVE_LINK');
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
 			dispatch(setLiveLinkData(undefined));
 		};

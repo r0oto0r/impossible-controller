@@ -13,8 +13,7 @@ export enum AudioCommand {
 	G_SHARP = 'G#',
 	A = 'A',
 	A_SHARP = 'A#',
-	B = 'B',
-	DRUM_HIT = 'DRUM_HIT'
+	B = 'B'
 };
 
 export interface AudioKeyBinding {

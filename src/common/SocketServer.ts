@@ -3,10 +3,10 @@ import http from 'http';
 import { Log } from './Log';
 import { Keyboard } from './Keyboard';
 import { FluteAudioReceiver } from '../Audio/FluteAudioReceiver';
-import { DrumAudioReceiver } from '../Audio/DrumAudioReceiver';
 import { LeapReceiver } from '../Leap/LeapReceiver';
 import { CommuniQi } from '../CommuniQi/CommuniQi';
 import { LiveLinkReceiver } from '../LiveLink/LiveLinkReceiver';
+import { AudioMaster } from './AudioMaster';
 
 export class SocketServer {
 	private static io: socketio.Server;
@@ -29,16 +29,15 @@ export class SocketServer {
 			this.clients.set(socket.id, socket);
 
 			Keyboard.onClientConnected(socket);
+			AudioMaster.onClientConnected(socket);
 			LiveLinkReceiver.onClientConnected(socket);
 
 			FluteAudioReceiver.onClientConnected(socket);
-			DrumAudioReceiver.onClientConnected(socket);
 			LeapReceiver.onClientConnected(socket);
 			CommuniQi.onClientConnected(socket);
 
 			socket.on('disconnect', () => {
 				FluteAudioReceiver.onClientDisconnected(socket);
-				DrumAudioReceiver.onClientDisconnected(socket);
 				LeapReceiver.onClientDisconnected(socket);
 
 				this.clients.delete(socket.id);
@@ -57,13 +56,6 @@ export class SocketServer {
 
 	public static on(messageType: string, callback: (data?: any, responseCallback?: Function) => void) {
 		this.io.on(messageType, callback);
-	}
-
-	public static joinRoom(socketId: string, room: string) {
-		const socket = this.clients.get(socketId);
-		if(socket) {
-			socket.join(room);
-		}
 	}
 
 	public static disconnectClient(socketId: string) {

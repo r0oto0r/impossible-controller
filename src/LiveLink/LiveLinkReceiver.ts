@@ -101,6 +101,13 @@ export class LiveLinkReceiver {
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {
+		socket.on('JOIN_ROOM', (room: string) => {
+			if(room !== 'LIVE_LINK') {
+				return;
+			}
+			socket.join(room);
+		});
+
 		socket.on('LIVE_LINK_TEST_MOVE_MOUSE', this.moveMouse);
 	}
 
@@ -112,7 +119,7 @@ export class LiveLinkReceiver {
 				if(liveLinkData.frameNumber > this.lastFrameNumber) {
 					this.lastFrameNumber = liveLinkData.frameNumber;
 
-					SocketServer.emit('LIVE_LINK_DATA', liveLinkData);
+					SocketServer.in('LIVE_LINK').emit('LIVE_LINK_DATA', liveLinkData);
 
 					const keyBindings = LiveLinkKeyBindings.getBindings();
 
@@ -148,7 +155,7 @@ export class LiveLinkReceiver {
 				}
 				if(this.lastFrameNumber !== 0) {
 					this.lastFrameNumber = 0;
-					SocketServer.emit('LIVE_LINK_DATA', undefined);
+					SocketServer.in('LIVE_LINK').emit('LIVE_LINK_DATA', undefined);
 				}
 			}
 		} catch (error) {

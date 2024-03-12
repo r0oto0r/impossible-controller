@@ -24,7 +24,13 @@ export class Keyboard {
 	}
 
 	public static onClientConnected = (socket: socketio.Socket) => {
-		socket.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
+		socket.on('JOIN_ROOM', (room: string) => {
+			if(room !== 'KEYBOARD') {
+				return;
+			}
+			socket.join(room);
+			socket.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
+		});
 	}
 
 	private static generateHIDMessage(keys: Array<string>): string {
@@ -66,7 +72,7 @@ export class Keyboard {
 			try {
 				const HIDMessage = this.generateHIDMessage(yetToPress);
 				this.keyboardStream.write(HIDMessage);
-				SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
+				SocketServer.in('KEYBOARD').emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 			} catch (error) {
 				Log.error(`Error occured: ${error}`);
 			}
@@ -85,7 +91,7 @@ export class Keyboard {
 					const HIDMessage = this.generateHIDMessage(yetToRelease);
 					this.keyboardStream.write(HIDMessage);
 				}
-				SocketServer.emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
+				SocketServer.in('KEYBOARD').emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 			} catch (error) {
 				Log.error(`Error occured: ${error}`);
 			}

@@ -13,10 +13,10 @@ import { FluteAudioReceiver } from './Audio/FluteAudioReceiver';
 import { Mouse } from './common/Mouse';
 import { LeapKeyBindings } from './Leap/LeapKeyBindings';
 import { LeapReceiver } from './Leap/LeapReceiver';
-import { DrumAudioReceiver } from './Audio/DrumAudioReceiver';
 import { YoutubeChatHandler } from './common/YoutubeChatHandler';
 import { TwitchChatHandler } from './common/TwitchChatHandler';
 import { CommuniQi } from './CommuniQi/CommuniQi';
+import { AudioMaster } from './common/AudioMaster';
 
 (async () => {
     try {
@@ -31,6 +31,8 @@ import { CommuniQi } from './CommuniQi/CommuniQi';
 		await Keyboard.init();
 		await Mouse.init();
 
+		await AudioMaster.init();
+
 		await YoutubeChatHandler.init(app);
 		await TwitchChatHandler.init(app);
 
@@ -39,7 +41,6 @@ import { CommuniQi } from './CommuniQi/CommuniQi';
 
 		await AudioKeyBindings.init(app);
 		FluteAudioReceiver.init();
-		DrumAudioReceiver.init();
 
 		await LeapKeyBindings.init(app);
 		LeapReceiver.init();
