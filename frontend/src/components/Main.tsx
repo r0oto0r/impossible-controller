@@ -24,8 +24,8 @@ function Main(): JSX.Element {
 			}
 		};
 
-		SocketClient.on('COMMUNI_QI_STATUS', (status: { started: boolean }) => {
-			dispatch(setStarted(status.started));
+		SocketClient.on('COMMUNI_QI_STATUS', (status: { started: boolean; maxPoolSize: number }) => {
+			dispatch(setStarted(status));
 		});
 
 		document.addEventListener("keydown", handleKeyPress);

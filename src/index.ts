@@ -16,7 +16,6 @@ import { LeapReceiver } from './Leap/LeapReceiver';
 import { YoutubeChatHandler } from './common/YoutubeChatHandler';
 import { TwitchChatHandler } from './common/TwitchChatHandler';
 import { CommuniQi } from './CommuniQi/CommuniQi';
-import { AudioMaster } from './common/AudioMaster';
 
 (async () => {
     try {
@@ -30,8 +29,6 @@ import { AudioMaster } from './common/AudioMaster';
 
 		await Keyboard.init();
 		await Mouse.init();
-
-		await AudioMaster.init();
 
 		await YoutubeChatHandler.init(app);
 		await TwitchChatHandler.init(app);

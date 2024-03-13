@@ -1,20 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { SocketClient } from '../../socket/SocketClient';
-import { useAppSelector } from '../../hooks/general';
-import { getCommuniQi } from '../../slices/communiQiSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks/general';
+import { getCommuniQi, setPowerPool } from '../../slices/communiQiSlice';
 import './CommuniQi.css';
 
 export const CommuniQiHearts = ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤎', '🤍'];
-export const CommuniQiBrokenHeart = '💔';
-export const maxPoolSize = 50;
+
+export enum CommuniQiPowerSource {
+	TwitchChat,
+	YouTubeChat,
+	Regeneration
+};
+
+export interface CommuniQiPower {
+	userName: string;
+	heart: string;
+	source: CommuniQiPowerSource;
+};
 
 function CommuniQi(): JSX.Element {
-	const [powerPoolSize, setPowerPoolSize] = useState<number | null>(null);
+	const [ poolSize, setPoolSize ] = React.useState<number>(0);
+	const poolRef = React.useRef<CommuniQiPower[] | null>(null);
 	const poolDivRef = React.useRef<HTMLDivElement>(null);
-	const { started } = useAppSelector((state) => getCommuniQi(state));
+	const { started, maxPoolSize } = useAppSelector((state) => getCommuniQi(state));
+	const dispatch = useAppDispatch();
 
 	useEffect(() => {
-		const createPowerBubble = () => {
+		const createPowerBubble = (userName: string, heart: string) => {
 			const bubble = document.createElement('div');
 			const rootElement = document.getElementById("root");
 			rootElement?.appendChild(bubble);
@@ -23,7 +35,7 @@ function CommuniQi(): JSX.Element {
 			bubble.style.animation = 'bubbleUp 2s linear infinite'
 			const animationDuration = Math.random() * 2 + 1;
 			bubble.style.animationDuration = `${animationDuration}s`;
-			bubble.innerHTML = CommuniQiHearts[Math.floor(Math.random() * CommuniQiHearts.length)];
+			bubble.innerHTML = `${heart}<br>${userName}`;
 			bubble.style.fontSize = `${Math.random() * 2 + 1}em`;
 
 			let randomLeft = Math.random() * window.innerWidth;
@@ -37,21 +49,30 @@ function CommuniQi(): JSX.Element {
 			}, animationDuration * 1000);
 		};
 
-		const handlePowerPool = (size: number) => {
-			if(powerPoolSize !== null && size > powerPoolSize) {
-				addPower(size - powerPoolSize);
-			}
-			setPowerPoolSize(size);
-		};
-
-		const addPower = (count: number) => {
-			for (let i = 0; i < count; i++) {
-				createPowerBubble();
+		const addPower = (power: CommuniQiPower[]) => {
+			for (let i = 0; i < power.length; i++) {
+				createPowerBubble(power[i].userName, power[i].heart);
 			}
 		};
 
-		SocketClient.emit('JOIN_ROOM', 'COMMUNI_QI');
-		SocketClient.on('COMMUNI_QI_POWER_POOL', handlePowerPool);
+		const handlePowerPool = (newPool: CommuniQiPower[]) => {
+			if(poolRef.current !== null && newPool.length > poolRef.current.length) {
+				const newItems: CommuniQiPower[] = newPool.slice(poolRef.current.length);
+				addPower(newItems);
+			}
+			poolRef.current = newPool;
+			setPoolSize(newPool.length);
+			dispatch(setPowerPool(newPool));
+		};
+
+		SocketClient.on('connect', () => {
+			SocketClient.emit('JOIN_ROOM', 'COMMUNI_QI');
+			SocketClient.on('COMMUNI_QI_POWER_POOL', handlePowerPool);
+		});
+
+		SocketClient.on('disconnect', () => {
+			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
+		});
 
 		if(poolDivRef.current) {
 			poolDivRef.current.style.pointerEvents = 'none';
@@ -61,32 +82,30 @@ function CommuniQi(): JSX.Element {
 			SocketClient.emit('LEAVE_ROOM', 'COMMUNI_QI');
 			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
 		};
-	}, [powerPoolSize, started])
+	}, [ dispatch ]);
 
-	const calculateColorAndSize = () => {
-		if(powerPoolSize === null) {
-			return 'red';
-		}
-
-		const fillPercentage = (powerPoolSize / maxPoolSize) * 100;
-
-		const red = Math.round(255 - (255 * fillPercentage) / 100);
-		const green = Math.round((39 * fillPercentage) / 100);
-		const blue = Math.round(176 - (176 * fillPercentage) / 100);
-
-		return `linear-gradient(0deg, rgb(${red}, ${green}, ${blue}), transparent)`;
-	};
-
-	const calculateSize = () => {
-		if(powerPoolSize === null) {
+	const calculateOpacity = React.useCallback(() => {
+		if(poolSize < 1) {
 			return 0;
 		}
 
-		const fillPercentage = (powerPoolSize / maxPoolSize) * 100;
+		let opacity = poolSize / maxPoolSize;
+		if(opacity > 1) opacity = 1;
+		if(opacity < 0.2) opacity = 0.2;
+
+		return opacity;
+	}, [ poolSize, maxPoolSize ]);
+
+	const calculateSize = React.useCallback(() => {
+		if(poolSize < 1) {
+			return 0;
+		}
+
+		const fillPercentage = (poolSize / maxPoolSize) * 100;
 
 		const size = (fillPercentage / 100) * 300;
 		return size;
-	}
+	}, [ poolSize, maxPoolSize ]);
 
 	return (
 		<div
@@ -94,8 +113,8 @@ function CommuniQi(): JSX.Element {
 			className="power-pool-box"
 			hidden={!started}
 			style={{
-				background: calculateColorAndSize(), // Set the gradient background color dynamically
-				height: `${calculateSize()}px`, // Set the height dynamically based on pool size
+				opacity: calculateOpacity(),
+				height: `${calculateSize()}px`,
 			}}
 		></div>
 	);

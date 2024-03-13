@@ -5,7 +5,7 @@ import { Log } from './Log';
 import { KeyPressedMap } from './SharedInterfaces';
 import { SocketServer } from './SocketServer';
 import socketio from 'socket.io';
-import { CommuniQi } from '../CommuniQi/CommuniQi';
+import { CommuniQi } from "../CommuniQi/CommuniQi";
 
 const KEYBOARD = process.env.PROD ? '/dev/hidg0' : '/dev/null';
 
@@ -61,13 +61,10 @@ export class Keyboard {
 	}
 
 	public static press(keys: Array<string>) {
-		const powerUsed = CommuniQi.usePower();
-		if(!powerUsed) {
-			return;
-		}
 		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 		const yetToPress = keys.filter(key => !keysPressed.includes(key));
 		if(yetToPress.length > 0) {
+			CommuniQi.usePower(yetToPress.length);
 			yetToPress.forEach(key => this.keysPressedCache[key] = true);
 			try {
 				const HIDMessage = this.generateHIDMessage(yetToPress);

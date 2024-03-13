@@ -6,6 +6,9 @@ import { Application } from "express";
 import { SocketServer } from "../common/SocketServer";
 import socketio from 'socket.io';
 
+export const CommuniQiHearts = ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤎', '🤍', '<3', 'e'];
+const regex = new RegExp(CommuniQiHearts.map(heart => `\\${heart}`).join('|'), 'g');
+
 export enum CommuniQiPowerSource {
 	TwitchChat,
 	YouTubeChat,
@@ -14,12 +17,12 @@ export enum CommuniQiPowerSource {
 
 export interface CommuniQiPower {
 	userName: string;
+	heart: string;
 	source: CommuniQiPowerSource;
 };
 
 export class CommuniQi {
 	private static communiQiPowerPool: CommuniQiPower[] = [];
-	private static powerRegenerationInterval: NodeJS.Timeout;
 	private static started: boolean = false;
 	private static maxPowerPoolSize = 50;
 
@@ -52,7 +55,7 @@ export class CommuniQi {
 				return;
 			}
 			socket.join(room);
-			socket.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+			socket.emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
 			socket.emit('COMMUNI_QI_STATUS', { started: this.started });
 		});
 	}
@@ -61,28 +64,26 @@ export class CommuniQi {
 		TwitchChatHandler.getClient().on('message', this.handleTwitchChatMessage);
 		YoutubeChatHandler.getLiveChat().on('chat', this.handleYoutubeChatMessage);
 
-		this.powerRegenerationInterval = setInterval(this.regeneratePower, 5000);
 		this.started = true;
 
-		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
-		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_STATUS', { started: this.started });
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_STATUS', { started: this.started, maxPowerPoolSize: this.maxPowerPoolSize });
 	}
 
 	private static stopCommuniQi = () => {
 		TwitchChatHandler.getClient()?.removeListener('message', this.handleTwitchChatMessage);
 		YoutubeChatHandler.getLiveChat()?.removeListener('chat', this.handleYoutubeChatMessage);
 
-		clearInterval(this.powerRegenerationInterval);
 		this.communiQiPowerPool = [];
 		this.started = false;
 
-		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
 		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_STATUS', { started: this.started });
 	}
 
 	private static detectHeartUnicodeEmojies = (message: string) => {
-		//return message.match(/[\u2764-\u2764]|<3|\uD83D\uDC9B/g);
-		return message.match(/\u2764|<3|\uD83D\uDC9B|z|y/g);
+		const matches = message.match(regex);
+		return matches;
 	}
 
 	private static handleTwitchChatMessage = (channel: string, userstate: tmi.ChatUserstate, message: string, self: boolean) => {
@@ -92,9 +93,7 @@ export class CommuniQi {
 
 		const hearts = this.detectHeartUnicodeEmojies(message);
 		if(hearts) {
-			for(const _ of hearts) {
-				this.addPower(userstate.username, CommuniQiPowerSource.TwitchChat);
-			}
+			this.addPower(userstate.username, hearts[0] === 'e' ? CommuniQiHearts[0] : hearts[0], CommuniQiPowerSource.TwitchChat);
 		}
 	}
 
@@ -103,19 +102,18 @@ export class CommuniQi {
 
 		const hearts = this.detectHeartUnicodeEmojies(chatItem.message);
 		if(hearts) {
-			for(const _ of hearts) {
-				this.addPower(chatItem.displayName, CommuniQiPowerSource.YouTubeChat);
-			}
+			this.addPower(chatItem.displayName, hearts[0] === 'e' ? CommuniQiHearts[0] : hearts[0], CommuniQiPowerSource.YouTubeChat);
 		}
 	}
 
-	private static addPower = (userName: string, source: CommuniQiPowerSource) => {
+	private static addPower = (userName: string, heart: string, source: CommuniQiPowerSource) => {
 		if(this.communiQiPowerPool.length >= this.maxPowerPoolSize) {
 			return;
 		}
 
-		const communiQiPower = {
+		const communiQiPower: CommuniQiPower = {
 			userName,
+			heart,
 			source
 		};
 
@@ -123,28 +121,21 @@ export class CommuniQi {
 
 		Log.debug(`Adding power from ${CommuniQiPowerSource[source]}: ${userName}`);
 
-		SocketServer.in('COMMUNIQI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
+		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
+
+		if(this.communiQiPowerPool.length >= this.maxPowerPoolSize) {
+			this.communiQiPowerPool = [];
+			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL_EXPLODED');
+			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
+		}
 	};
 
-	private static regeneratePower = () => {
+	public static usePower = (howMuch: number) => {
 		if(this.communiQiPowerPool.length > 0) {
-			return;
+			for(let i = 0; i < howMuch; i++) {
+				this.communiQiPowerPool.shift();
+			}
+			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
 		}
-		Log.debug("Regenerating power");
-
-		this.addPower(Date.now().toString(), CommuniQiPowerSource.Regeneration);
-	}
-
-	public static usePower(): boolean {
-		if(!this.started) {
-			return true;
-		}
-		if(this.communiQiPowerPool.length > 0) {
-			const communiQiPower = this.communiQiPowerPool.shift();
-			Log.debug(`Using power from user: ${communiQiPower.userName} from source: ${communiQiPower.source}`);
-			SocketServer.in('COMMUNIQI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool.length);
-			return true;
-		}
-		return false;
 	}
 }

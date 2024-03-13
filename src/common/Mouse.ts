@@ -1,6 +1,5 @@
 import { Log } from "./Log";
 import fs from 'fs';
-import { CommuniQi } from "../CommuniQi/CommuniQi";
 
 export enum MouseMessage {
 	MOUSE_POSITION = 'MOUSE_POSITION'
@@ -21,7 +20,6 @@ const MOUSE = process.env.PROD ? '/dev/hidg1' : '/dev/null';
 export class Mouse {
 	private static mouseStream: fs.WriteStream;
 	private static mousePosition: MousePosition = { x: 0, y: 0 };
-	private static powerLastUsed: Date;
 
 	public static async init() {
 		this.mouseStream = fs.createWriteStream(MOUSE);
@@ -60,20 +58,8 @@ export class Mouse {
 			y = 0;
 		}
 
-		if(!this.powerLastUsed || (new Date().getTime() - this.powerLastUsed.getTime()) > 3000) {
-			this.powerLastUsed = undefined;
-			const powerUsed = CommuniQi.usePower();
-			if(!powerUsed) {
-				return;
-			}
-			this.powerLastUsed = new Date();
-			this.mousePosition.x = x;
-			this.mousePosition.y = y;
-			this.mouseStream.write(this.generateHIDMessage(x, y));
-		} else if (new Date().getTime() - this.powerLastUsed.getTime() <= 3000) {
-			this.mousePosition.x = x;
-			this.mousePosition.y = y;
-			this.mouseStream.write(this.generateHIDMessage(x, y));
-		}
+		this.mousePosition.x = x;
+		this.mousePosition.y = y;
+		this.mouseStream.write(this.generateHIDMessage(x, y));
 	}
 }

@@ -133,7 +133,7 @@ function AudioAnalyzer(): JSX.Element {
 	}, [mediaAudio, recording, dispatch]);
 
 	return (
-		<div className="w3-container  w3-margin w3-center" hidden={extraMenusHidden}>
+		<div className="w3-container w3-center" hidden={extraMenusHidden}>
 			<div className="w3-row-padding" style={{ display: "flex" }}>
 				<div className="w3-third">
 					<div className="value-container">

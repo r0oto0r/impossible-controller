@@ -52,6 +52,7 @@ export class YoutubeChatHandler {
 		if(this.syncTimer) {
 			Log.info(`Stopping youtube chat for live id: ${this.liveId}`);
 			clearInterval(this.syncTimer);
+			this.syncTimer = undefined;
 		}
 	}
 
@@ -63,6 +64,7 @@ export class YoutubeChatHandler {
 		try {
 			if(this.syncTimer) {
 				clearTimeout(this.syncTimer);
+				this.syncTimer = undefined;
 			}
 
 			const response = await this.youtube.liveChatMessages.list({

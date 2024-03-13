@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
-import { getAudioStreamInfo, setAudioKey, setByteTimeDomainData } from "../../slices/audioStreamInfoSlice";
+import { getAudioStreamInfo } from "../../slices/audioStreamInfoSlice";
 import store from "../../store/store";
-import { SocketClient } from "../../socket/SocketClient";
 
 const ColorKeyMap: {
 	[key: string]: string
@@ -25,13 +24,13 @@ function AudioVisualizer(): JSX.Element {
 	const rafId = React.useRef<number>(0);
 
 	useEffect(() => {
-		SocketClient.on('connect', () => {
-			SocketClient.emit('JOIN_ROOM', 'AUDIO');
-			SocketClient.on('AUDIO_DATA', (data) => {
-				store.dispatch(setAudioKey(data.key));
-				store.dispatch(setByteTimeDomainData(new Uint8Array(data.byteTimeDomainData)));
-			});
-		});
+		// SocketClient.on('connect', () => {
+		// 	SocketClient.emit('JOIN_ROOM', 'AUDIO');
+		// 	SocketClient.on('AUDIO_DATA', (data) => {
+		// 		store.dispatch(setAudioKey(data.key));
+		// 		store.dispatch(setByteTimeDomainData(new Uint8Array(data.byteTimeDomainData)));
+		// 	});
+		// });
 
 		const draw = () => {
 			const canvas = canvasRef.current;
@@ -44,9 +43,9 @@ function AudioVisualizer(): JSX.Element {
 					if(byteTimeDomainData) {
 						let x = 0;
 						const sliceWidth = width / byteTimeDomainData.length;
-	
+
 						context.lineCap = 'round';
-						context.lineWidth = 5;
+						context.lineWidth = 7;
 
 						const key = getAudioStreamInfo(store.getState()).currentKey;
 						if(key && key !== 'NONE' && ColorKeyMap[key]) {
@@ -57,30 +56,29 @@ function AudioVisualizer(): JSX.Element {
 
 						context.clearRect(0, 0, width, height);
 						context.beginPath();
-	
+
 						if(byteTimeDomainData.length > 0) {
 							for(let i = 0; i < byteTimeDomainData.length; i++) {
 								const v = byteTimeDomainData[i] / 128.0;
 								const y = v * canvas.height / 2;
-	
+
 								if(i === 0) {
 									context.moveTo(x, y);
 								} else {
 									context.lineTo(x, y);
 								}
-	
+
 								x += sliceWidth;
 							}
 						} else {
 							context.moveTo(0, canvas.height / 2);
 						}
-	
+
 						context.lineTo(canvas.width, canvas.height / 2);
 						context.stroke();
 					}
-				}			
+				}
 			}
-
 			rafId.current = requestAnimationFrame(draw);
 		}
 
@@ -88,6 +86,7 @@ function AudioVisualizer(): JSX.Element {
 			const canvas = canvasRef.current;
 			if(canvas) {
 				canvas.width = window.innerWidth;
+				canvas.height = 0.9 * window.innerHeight;
 			}
 		};
 
@@ -103,8 +102,8 @@ function AudioVisualizer(): JSX.Element {
 	}, []);
 
 	return (
-		<div className="w3-display-middle" style={{ width: '100%' }}>
-			<canvas ref={canvasRef} style={{ width: "100%", height: "300" }} />
+		<div style={{ position: "absolute", top: '5%', left: 0, right: 0, bottom: 0 }}>
+			<canvas ref={canvasRef} />
 		</div>
 	);
 }
