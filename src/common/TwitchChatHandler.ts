@@ -20,7 +20,7 @@ export class TwitchChatHandler {
 		});
 	}
 
-	public static async startTwitchChat(channel: string) {
+	public static startTwitchChat(channel: string) {
 		this.stopTwitchChat();
 		Log.info(`Starting twitch chat for channel: ${channel}`);
 		this.channel = channel;
@@ -35,7 +35,7 @@ export class TwitchChatHandler {
 		this.client.connect();
 	}
 
-	public static async stopTwitchChat() {
+	public static stopTwitchChat() {
 		if(this.client && this.client.readyState() === 'OPEN') {
 			Log.info(`Stopping twitch chat for channel: ${this.channel}`);
 			this.client.disconnect();

@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../hooks/general';
-import { getCommuniQi, setTwitchChannelName, setYouTubeLiveId, setMaxPoolSize } from '../../slices/communiQiSlice';
+import { getCommuniQi, setTwitchChannelName, setYouTubeLiveId, setMaxPoolSize, setUseRBTVWebsiteChat } from '../../slices/communiQiSlice';
 import { getServer } from '../../slices/serverSlice';
 import { SocketClient } from '../../socket/SocketClient';
+import React from 'react';
 
 function CommuniQiSettings(): JSX.Element {
 	const { address } = useAppSelector((state) => getServer(state));
-	const { started, twitchChannelName, youtubeLiveId, maxPoolSize } = useAppSelector((state) => getCommuniQi(state));
+	const { started, twitchChannelName, youtubeLiveId, maxPoolSize, useRBTVWebsiteChat } = useAppSelector((state) => getCommuniQi(state));
 	const dispatch = useAppDispatch();
 
 	const handleTwitchChannelNameInputChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (event) => {
@@ -25,9 +26,10 @@ function CommuniQiSettings(): JSX.Element {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					twitchChannelName,
-					youtubeLiveId,
-					maxPoolSize
+					twitchChannelName: useRBTVWebsiteChat ? undefined : twitchChannelName,
+					youtubeLiveId : useRBTVWebsiteChat ? undefined : youtubeLiveId,
+					maxPoolSize,
+					useRBTVWebsiteChat
 				})
 			});
 		} else {
@@ -55,15 +57,23 @@ function CommuniQiSettings(): JSX.Element {
 				</div>
 			</div>
 			<div className="w3-row">
-				<div className="w3-col s5">
-					<form className="w3-container" noValidate autoComplete="off">
-						<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="Twitch channel name" value={twitchChannelName} onChange={handleTwitchChannelNameInputChange} />
-					</form>
-				</div>
-				<div className="w3-col s5">
-					<form className="w3-container" noValidate autoComplete="off">
-						<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="YouTube live id" value={youtubeLiveId} onChange={handleYouTubeLiveIdInputChange} />
-					</form>
+				{!useRBTVWebsiteChat && <React.Fragment>
+					<div className="w3-col s5">
+						<form className="w3-container" noValidate autoComplete="off">
+							<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="Twitch channel name" value={twitchChannelName} onChange={handleTwitchChannelNameInputChange} />
+						</form>
+					</div>
+					<div className="w3-col s5">
+						<form className="w3-container" noValidate autoComplete="off">
+							<input className="w3-input w3-border w3-round" type="text" id="outlined-basic" placeholder="YouTube live id" value={youtubeLiveId} onChange={handleYouTubeLiveIdInputChange} />
+						</form>
+					</div>
+				</React.Fragment>}
+			</div>
+			<div className="w3-row">
+				<div className="w3-col s2">
+					<input className="w3-check" type="checkbox" checked={useRBTVWebsiteChat} onChange={(event) => dispatch(setUseRBTVWebsiteChat(event.target.checked))} />
+					<label>Use RBTV Website Chat</label>
 				</div>
 				<div className="w3-col s2">
 					{maxPoolSize}

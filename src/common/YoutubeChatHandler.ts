@@ -48,7 +48,7 @@ export class YoutubeChatHandler {
 		this.syncTimer = setTimeout(this.syncChat, 5000);
 	}
 
-	public static async stopLiveChat() {
+	public static stopLiveChat() {
 		if(this.syncTimer) {
 			Log.info(`Stopping youtube chat for live id: ${this.liveId}`);
 			clearInterval(this.syncTimer);

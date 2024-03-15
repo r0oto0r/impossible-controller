@@ -7,7 +7,8 @@ interface CommuniQiState {
 	twitchChannelName: string;
 	youtubeLiveId: string;
 	maxPoolSize: number;
-	powerPool?: CommuniQiPower[];
+	powerPool: CommuniQiPower[];
+	useRBTVWebsiteChat: boolean;
 };
 
 const initialState: CommuniQiState = {
@@ -15,18 +16,18 @@ const initialState: CommuniQiState = {
 	twitchChannelName: '',
 	youtubeLiveId: '',
 	maxPoolSize: 50,
-	powerPool: []
+	powerPool: [],
+	useRBTVWebsiteChat: false
 };
 
 export const communiQiSlice = createSlice({
 	name: 'communiQi',
 	initialState,
 	reducers: {
-		setStarted: (state, action: PayloadAction<{ started: boolean; maxPoolSize: number }>) => {
+		setStarted: (state, action: PayloadAction<{ started: boolean; maxPoolSize: number; useRBTVWebsiteChat: boolean; }>) => {
 			state.started = action.payload.started;
-			if(action.payload.maxPoolSize !== undefined) {
-				state.maxPoolSize = action.payload.maxPoolSize;
-			}
+			state.maxPoolSize = action.payload.maxPoolSize;
+			state.useRBTVWebsiteChat = action.payload.useRBTVWebsiteChat;
 		},
 		setTwitchChannelName: (state, action: PayloadAction<string>) => {
 			state.twitchChannelName = action.payload;
@@ -39,10 +40,13 @@ export const communiQiSlice = createSlice({
 		},
 		setMaxPoolSize: (state, action: PayloadAction<number>) => {
 			state.maxPoolSize = action.payload;
+		},
+		setUseRBTVWebsiteChat: (state, action: PayloadAction<boolean>) => {
+			state.useRBTVWebsiteChat = action.payload;
 		}
 	}
 });
 
-export const { setTwitchChannelName, setYouTubeLiveId, setStarted, setPowerPool, setMaxPoolSize } = communiQiSlice.actions;
+export const { setTwitchChannelName, setYouTubeLiveId, setStarted, setPowerPool, setMaxPoolSize, setUseRBTVWebsiteChat } = communiQiSlice.actions;
 export const getCommuniQi = (state: RootState): CommuniQiState => state.communiQi;
 export default communiQiSlice.reducer;

@@ -16,6 +16,7 @@ import { LeapReceiver } from './Leap/LeapReceiver';
 import { YoutubeChatHandler } from './common/YoutubeChatHandler';
 import { TwitchChatHandler } from './common/TwitchChatHandler';
 import { CommuniQi } from './CommuniQi/CommuniQi';
+import { WebsiteChatHandler } from './common/WebsiteChatHandler';
 
 (async () => {
     try {
@@ -32,6 +33,7 @@ import { CommuniQi } from './CommuniQi/CommuniQi';
 
 		await YoutubeChatHandler.init(app);
 		await TwitchChatHandler.init(app);
+		await WebsiteChatHandler.init();
 
 		await LiveLinkKeyBindings.init(app);
 		LiveLinkReceiver.init();

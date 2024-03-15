@@ -4,8 +4,6 @@ import { useAppDispatch, useAppSelector } from '../../hooks/general';
 import { getCommuniQi, setPowerPool } from '../../slices/communiQiSlice';
 import './CommuniQi.css';
 
-export const CommuniQiHearts = ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤎', '🤍'];
-
 export enum CommuniQiPowerSource {
 	TwitchChat,
 	YouTubeChat,
@@ -65,13 +63,33 @@ function CommuniQi(): JSX.Element {
 			dispatch(setPowerPool(newPool));
 		};
 
+		const handlePowerUp = (power: CommuniQiPower) => {
+			if(poolRef.current !== null) {
+				poolRef.current.push(power);
+				setPoolSize(poolRef.current.length);
+				dispatch(setPowerPool(poolRef.current));
+			}
+		};
+
+		const handlePowerDown = () => {
+			if(poolRef.current !== null) {
+				poolRef.current.shift();
+				setPoolSize(poolRef.current.length);
+				dispatch(setPowerPool(poolRef.current));
+			}
+		};
+
 		SocketClient.on('connect', () => {
 			SocketClient.emit('JOIN_ROOM', 'COMMUNI_QI');
 			SocketClient.on('COMMUNI_QI_POWER_POOL', handlePowerPool);
+			SocketClient.on('COMMUNI_QI_POWER_UP', handlePowerUp);
+			SocketClient.on('COMMUNI_QI_POWER_DOWN', handlePowerDown);
 		});
 
 		SocketClient.on('disconnect', () => {
 			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
+			SocketClient.off('COMMUNI_QI_POWER_UP', handlePowerUp);
+			SocketClient.off('COMMUNI_QI_POWER_DOWN', handlePowerDown);
 		});
 
 		if(poolDivRef.current) {
@@ -81,6 +99,8 @@ function CommuniQi(): JSX.Element {
 		return () => {
 			SocketClient.emit('LEAVE_ROOM', 'COMMUNI_QI');
 			SocketClient.off('COMMUNI_QI_POWER_POOL', handlePowerPool);
+			SocketClient.off('COMMUNI_QI_POWER_UP', handlePowerUp);
+			SocketClient.off('COMMUNI_QI_POWER_DOWN', handlePowerDown);
 		};
 	}, [ dispatch ]);
 
