@@ -5,17 +5,18 @@ import { YoutubeChatHandler } from "../common/YoutubeChatHandler";
 import { Application } from "express";
 import { SocketServer } from "../common/SocketServer";
 import socketio from 'socket.io';
-import { WebsiteChatHandler } from "../common/WebsiteChatHandler";
+import { PublicMessageObject, WebsiteChatHandler } from "../common/WebsiteChatHandler";
 
 export const CommonHeartWaveCandidates = ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤎', '🤍', '💖', '💗', '💘', '💝', '💞', '💟', '❣️', '<3', 'e', 'n']
-export const TwitchHeartWaveCandidates = [':rbtvLovenado:', ':TransgenderPride:', ':PansexualPride:', ':NonbinaryPride:', ':LesbianPride:', ':IntersexPride:', ':GenderFluidPride:', ':GayPride:', ':BisexualPride:', ':AsexualPride:', ':VirtualHug:', ':TwitchUnity:', ':bleedPurple:'];
-export const YoutTubeHeartWaveCandidates = [':thanksdoc:', ':virtualhug:'];
+export const TwitchHeartWaveCandidates = ['rbtvLovenado', 'TransgenderPride', 'PansexualPride', 'NonbinaryPride', 'LesbianPride', 'IntersexPride', 'GenderFluidPride', 'GayPride', 'BisexualPride', 'AsexualPride', 'VirtualHug', 'TwitchUnity', 'bleedPurple'];
+export const YoutTubeHeartWaveCandidates = ['thanksdoc', 'virtualhug'];
 export const CommuniQiHearts = CommonHeartWaveCandidates.concat(TwitchHeartWaveCandidates).concat(YoutTubeHeartWaveCandidates);
 const regex = new RegExp(CommuniQiHearts.map(heart => `\\${heart}`).join('|'), 'g');
 
 export enum CommuniQiPowerSource {
 	TwitchChat,
 	YouTubeChat,
+	WebsiteChat,
 	Regeneration
 };
 
@@ -132,7 +133,7 @@ export class CommuniQi {
 	}
 
 	private static handleYoutubeChatMessage = (chatItem: { displayName: string; message: string; }) => {
-		if(chatItem.displayName === 'Nightbot' || chatItem.displayName === 'nichtbot') return;
+		if(chatItem.displayName === 'Nightbot' || chatItem.displayName === 'nightbot') return;
 
 		const hearts = this.detectHeartUnicodeEmojies(chatItem.message);
 		if(hearts) {
@@ -140,12 +141,12 @@ export class CommuniQi {
 		}
 	}
 
-	private static handleWebsiteChatMessage = (chatItem: { displayName: string; message: string; }) => {
-		if(chatItem.displayName === 'Nightbot' || chatItem.displayName === 'nichtbot') return;
+	private static handleWebsiteChatMessage = (chatItem: PublicMessageObject) => {
+		if(chatItem.user === 'Nightbot' || chatItem.user === 'nightbot') return;
 
 		const hearts = this.detectHeartUnicodeEmojies(chatItem.message);
 		if(hearts) {
-			this.addPower(chatItem.displayName, hearts[0], CommuniQiPowerSource.Regeneration);
+			this.addPower(chatItem.user, hearts[0], CommuniQiPowerSource.WebsiteChat);
 		}
 	}
 
@@ -166,8 +167,6 @@ export class CommuniQi {
 		};
 
 		this.communiQiPowerPool.push(communiQiPower);
-
-		Log.debug(`Adding power from ${CommuniQiPowerSource[source]}: ${userName}`);
 
 		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_UP', communiQiPower);
 	};

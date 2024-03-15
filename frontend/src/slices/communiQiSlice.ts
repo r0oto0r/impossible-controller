@@ -43,10 +43,16 @@ export const communiQiSlice = createSlice({
 		},
 		setUseRBTVWebsiteChat: (state, action: PayloadAction<boolean>) => {
 			state.useRBTVWebsiteChat = action.payload;
+		},
+		addPower: (state, action: PayloadAction<CommuniQiPower>) => {
+			state.powerPool.push(action.payload);
+		},
+		lowerPower: (state) => {
+			state.powerPool.pop();
 		}
 	}
 });
 
-export const { setTwitchChannelName, setYouTubeLiveId, setStarted, setPowerPool, setMaxPoolSize, setUseRBTVWebsiteChat } = communiQiSlice.actions;
+export const { setTwitchChannelName, setYouTubeLiveId, setStarted, setPowerPool, setMaxPoolSize, setUseRBTVWebsiteChat, addPower, lowerPower } = communiQiSlice.actions;
 export const getCommuniQi = (state: RootState): CommuniQiState => state.communiQi;
 export default communiQiSlice.reducer;

@@ -2,6 +2,23 @@ import EventEmitter from "node:events";
 import { Log } from "./Log";
 import { SocketClient } from "./SocketClient";
 
+export enum ChatMessageSource {
+	TWITCH,
+	YOUTUBE
+}
+
+export interface TwitchSpecialPayload {
+	emotes: string,
+	uuid: string,
+	mod: boolean,
+	subscriber: boolean
+}
+
+export interface YoutubeSpecialPayload {
+	uuid: string;
+	mod: boolean;
+}
+
 export interface XX_PING {
 	id: number;
 	tick: number;
@@ -12,6 +29,17 @@ export enum SocketEvents {
 	CA_PONG = 'CA_PONG',
 	AC_CHAT_MESSAGE_FULL = 'chatMessage',
 	CA_JOIN_CHAT = 'subscribeChatMessages'
+};
+
+export interface PublicMessageObject {
+	uuid: string;
+	source: ChatMessageSource;
+	dateFrom: Date;
+	message: string;
+	user: string;
+	userIdentifier: string;
+	specialPayload: TwitchSpecialPayload | YoutubeSpecialPayload;
+	supporterLevel?: number;
 };
 
 export class WebsiteChatHandler {
@@ -27,7 +55,7 @@ export class WebsiteChatHandler {
 		this.socketClient.emit(SocketEvents.CA_PONG, data);
 	}
 
-	private static processChatMessage = (data: any) => {
+	private static processChatMessage = (data: PublicMessageObject) => {
 		this.eventEmitter.emit(SocketEvents.AC_CHAT_MESSAGE_FULL, data);
 	}
 

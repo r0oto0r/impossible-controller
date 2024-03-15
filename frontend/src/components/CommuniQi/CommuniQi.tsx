@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { SocketClient } from '../../socket/SocketClient';
 import { useAppDispatch, useAppSelector } from '../../hooks/general';
-import { getCommuniQi, setPowerPool } from '../../slices/communiQiSlice';
+import { getCommuniQi, setPowerPool, addPower, lowerPower } from '../../slices/communiQiSlice';
 import './CommuniQi.css';
 
 export enum CommuniQiPowerSource {
@@ -17,17 +17,14 @@ export interface CommuniQiPower {
 };
 
 function CommuniQi(): JSX.Element {
-	const [ poolSize, setPoolSize ] = React.useState<number>(0);
-	const poolRef = React.useRef<CommuniQiPower[] | null>(null);
 	const poolDivRef = React.useRef<HTMLDivElement>(null);
-	const { started, maxPoolSize } = useAppSelector((state) => getCommuniQi(state));
+	const { started, maxPoolSize, powerPool } = useAppSelector((state) => getCommuniQi(state));
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
 		const createPowerBubble = (userName: string, heart: string) => {
 			const bubble = document.createElement('div');
-			const rootElement = document.getElementById("root");
-			rootElement?.appendChild(bubble);
+			document.body.appendChild(bubble);
 
 			bubble.className = 'power-bubble';
 			bubble.style.animation = 'bubbleUp 2s linear infinite'
@@ -43,40 +40,21 @@ function CommuniQi(): JSX.Element {
 			bubble.style.bottom = `0px`;
 
 			setTimeout(() => {
-				rootElement?.removeChild(bubble);
+				document.body.removeChild(bubble);
 			}, animationDuration * 1000);
 		};
 
-		const addPower = (power: CommuniQiPower[]) => {
-			for (let i = 0; i < power.length; i++) {
-				createPowerBubble(power[i].userName, power[i].heart);
-			}
-		};
-
 		const handlePowerPool = (newPool: CommuniQiPower[]) => {
-			if(poolRef.current !== null && newPool.length > poolRef.current.length) {
-				const newItems: CommuniQiPower[] = newPool.slice(poolRef.current.length);
-				addPower(newItems);
-			}
-			poolRef.current = newPool;
-			setPoolSize(newPool.length);
 			dispatch(setPowerPool(newPool));
 		};
 
 		const handlePowerUp = (power: CommuniQiPower) => {
-			if(poolRef.current !== null) {
-				poolRef.current.push(power);
-				setPoolSize(poolRef.current.length);
-				dispatch(setPowerPool(poolRef.current));
-			}
+			dispatch(addPower(power));
+			createPowerBubble(power.userName, power.heart);
 		};
 
 		const handlePowerDown = () => {
-			if(poolRef.current !== null) {
-				poolRef.current.shift();
-				setPoolSize(poolRef.current.length);
-				dispatch(setPowerPool(poolRef.current));
-			}
+			dispatch(lowerPower());
 		};
 
 		SocketClient.on('connect', () => {
@@ -104,28 +82,28 @@ function CommuniQi(): JSX.Element {
 		};
 	}, [ dispatch ]);
 
-	const calculateOpacity = React.useCallback(() => {
-		if(poolSize < 1) {
+	const calculateOpacity = () => {
+		if(powerPool.length < 1) {
 			return 0;
 		}
 
-		let opacity = poolSize / maxPoolSize;
+		let opacity = powerPool.length / maxPoolSize;
 		if(opacity > 1) opacity = 1;
 		if(opacity < 0.2) opacity = 0.2;
 
 		return opacity;
-	}, [ poolSize, maxPoolSize ]);
+	};
 
-	const calculateSize = React.useCallback(() => {
-		if(poolSize < 1) {
+	const calculateSize = () => {
+		if(powerPool.length < 1) {
 			return 0;
 		}
 
-		const fillPercentage = (poolSize / maxPoolSize) * 100;
+		const fillPercentage = (powerPool.length / maxPoolSize) * 100;
 
 		const size = (fillPercentage / 100) * 300;
 		return size;
-	}, [ poolSize, maxPoolSize ]);
+	};
 
 	return (
 		<div
