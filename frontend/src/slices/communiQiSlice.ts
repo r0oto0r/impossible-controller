@@ -24,9 +24,9 @@ export const communiQiSlice = createSlice({
 	name: 'communiQi',
 	initialState,
 	reducers: {
-		setStarted: (state, action: PayloadAction<{ started: boolean; maxPoolSize: number; useRBTVWebsiteChat: boolean; }>) => {
+		setStarted: (state, action: PayloadAction<{ started: boolean; maxPowerPoolSize: number; useRBTVWebsiteChat: boolean; }>) => {
 			state.started = action.payload.started;
-			state.maxPoolSize = action.payload.maxPoolSize;
+			state.maxPoolSize = action.payload.maxPowerPoolSize;
 			state.useRBTVWebsiteChat = action.payload.useRBTVWebsiteChat;
 		},
 		setTwitchChannelName: (state, action: PayloadAction<string>) => {

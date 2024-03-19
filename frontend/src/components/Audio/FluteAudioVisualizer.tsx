@@ -24,22 +24,62 @@ function AudioVisualizer(): JSX.Element {
 	const rafId = React.useRef<number>(0);
 
 	useEffect(() => {
-		// SocketClient.on('connect', () => {
-		// 	SocketClient.emit('JOIN_ROOM', 'AUDIO');
-		// 	SocketClient.on('AUDIO_DATA', (data) => {
-		// 		store.dispatch(setAudioKey(data.key));
-		// 		store.dispatch(setByteTimeDomainData(new Uint8Array(data.byteTimeDomainData)));
-		// 	});
-		// });
+		let lastOctave = 4;
+		let lastKey = 'NONE';
+
+		const positionMap: { [keyAndOctave: string]: number } = {
+			'NONE4': 0,
+			'A4': 700,
+			'A#4': 650,
+			'B4': 600,
+			'C5': 550,
+			'C#5': 500,
+			'D5': 450,
+			'D#5': 400,
+			'E5': 350,
+			'F5': 300,
+			'F#5': 250,
+			'G5': 200,
+			'G#5': 150,
+			'A5': 100,
+			'A#5': 50,
+			'B5': 0,
+		};
 
 		const draw = () => {
 			const canvas = canvasRef.current;
-			const byteTimeDomainData = getAudioStreamInfo(store.getState()).byteTimeDomainData;
-
 			if(canvas) {
 				const { height, width } = canvas;
 				const context = canvas.getContext('2d');
 				if(context) {
+					context.clearRect(0, 0, width, height);
+
+					context.globalAlpha = 0.5;
+
+					const rectWidth = 800;
+					const rectHeight = 70;
+					const rectX = (width - rectWidth) / 2;
+					const rectY = (height - rectHeight) / 2;
+					context.fillStyle = '#333';
+					context.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+					context.fillStyle = '#fff';
+					context.fillRect(rectX + rectWidth - 150, rectY - 5, 150, rectHeight + 10);
+
+					let { currentKey, currentOctave, byteTimeDomainData } = getAudioStreamInfo(store.getState());
+					if(currentKey !== 'NONE') {
+						lastOctave = currentOctave;
+						lastKey = currentKey;
+					} else {
+						currentOctave = lastOctave;
+						currentKey = lastKey;
+					}
+
+					context.fillStyle = '#fff';
+					context.fillRect(rectX - positionMap[currentKey+currentOctave], rectY + (rectHeight / 2) - 5, 700, 10);
+
+					context.globalAlpha = 1.0;
+
 					if(byteTimeDomainData) {
 						let x = 0;
 						const sliceWidth = width / byteTimeDomainData.length;
@@ -47,14 +87,12 @@ function AudioVisualizer(): JSX.Element {
 						context.lineCap = 'round';
 						context.lineWidth = 7;
 
-						const key = getAudioStreamInfo(store.getState()).currentKey;
-						if(key && key !== 'NONE' && ColorKeyMap[key]) {
-							context.strokeStyle = ColorKeyMap[key];
+						if(currentKey && currentKey !== 'NONE' && ColorKeyMap[currentKey]) {
+							context.strokeStyle = ColorKeyMap[currentKey];
 						} else {
 							context.strokeStyle = '#9c27b0';
 						}
 
-						context.clearRect(0, 0, width, height);
 						context.beginPath();
 
 						if(byteTimeDomainData.length > 0) {
@@ -74,6 +112,12 @@ function AudioVisualizer(): JSX.Element {
 							context.moveTo(0, canvas.height / 2);
 						}
 
+						context.lineTo(canvas.width, canvas.height / 2);
+						context.stroke();
+					} else {
+						context.strokeStyle = '#9c27b0';
+						context.beginPath();
+						context.moveTo(0, canvas.height / 2);
 						context.lineTo(canvas.width, canvas.height / 2);
 						context.stroke();
 					}

@@ -17,6 +17,7 @@ import { YoutubeChatHandler } from './common/YoutubeChatHandler';
 import { TwitchChatHandler } from './common/TwitchChatHandler';
 import { CommuniQi } from './CommuniQi/CommuniQi';
 import { WebsiteChatHandler } from './common/WebsiteChatHandler';
+import { SubEventReceiver } from './SubEvent/SubEventReceiver';
 
 (async () => {
     try {
@@ -31,9 +32,9 @@ import { WebsiteChatHandler } from './common/WebsiteChatHandler';
 		await Keyboard.init();
 		await Mouse.init();
 
-		await YoutubeChatHandler.init(app);
-		await TwitchChatHandler.init(app);
-		await WebsiteChatHandler.init();
+		// await YoutubeChatHandler.init(app);
+		// await TwitchChatHandler.init(app);
+		// await WebsiteChatHandler.init();
 
 		await LiveLinkKeyBindings.init(app);
 		LiveLinkReceiver.init();
@@ -45,6 +46,8 @@ import { WebsiteChatHandler } from './common/WebsiteChatHandler';
 		LeapReceiver.init();
 
 		await CommuniQi.init(app);
+
+		// SubEventReceiver.init(app);
 
 		SocketServer.init(httpServer);
 

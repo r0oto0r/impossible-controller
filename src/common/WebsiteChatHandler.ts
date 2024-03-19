@@ -72,7 +72,6 @@ export class WebsiteChatHandler {
 		this.socketClient.on('connect', () => {
 			this.socketClient.emit(SocketEvents.CA_JOIN_CHAT, { allChannels: true });
 		});
-
 	}
 
 	public static stopWebsiteChat = () => {

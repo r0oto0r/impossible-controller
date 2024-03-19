@@ -3,11 +3,13 @@ import type { RootState } from '../store/store'
 
 export interface AudioInfoState {
 	currentKey: string;
+	currentOctave: number;
 	byteTimeDomainData?: Uint8Array;
 }
 
 const initialState: AudioInfoState = {
-	currentKey: 'NONE'
+	currentKey: 'NONE',
+	currentOctave: 0
 };
 
 export const audioStreamInfoSlice = createSlice({
@@ -17,12 +19,13 @@ export const audioStreamInfoSlice = createSlice({
 		setByteTimeDomainData: (state, action: PayloadAction<Uint8Array>) => {
 			state.byteTimeDomainData = action.payload;
 		},
-		setAudioKey: (state, action: PayloadAction<string>) => {
-			state.currentKey = action.payload;
+		setAudioInfo: (state, action: PayloadAction<{ key: string; octave: number }>) => {
+			state.currentKey = action.payload.key;
+			state.currentOctave = action.payload.octave;
 		}
     }
 });
 
-export const { setByteTimeDomainData, setAudioKey } = audioStreamInfoSlice.actions;
+export const { setByteTimeDomainData, setAudioInfo } = audioStreamInfoSlice.actions;
 export const getAudioStreamInfo = (state: RootState): AudioInfoState => state.audioStreamInfo;
 export default audioStreamInfoSlice.reducer;

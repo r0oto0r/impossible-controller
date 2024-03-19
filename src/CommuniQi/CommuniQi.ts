@@ -36,8 +36,9 @@ export class CommuniQi {
 		Log.info("Initializing CommuniQi");
 
 		app.post('/communi-qi/start', async (req, res) => {
-			const { twitchChannelName, youtubeLiveId, useRBTVWebsiteChat } = req.body as { twitchChannelName: string, youtubeLiveId: string, useRBTVWebsiteChat: boolean};
+			const { twitchChannelName, youtubeLiveId, useRBTVWebsiteChat, maxPoolSize } = req.body as { twitchChannelName: string, youtubeLiveId: string, useRBTVWebsiteChat: boolean, maxPoolSize: number };
 			this.useRBTVWebsiteChat = useRBTVWebsiteChat;
+			this.maxPowerPoolSize = maxPoolSize;
 			if(!this.useRBTVWebsiteChat && (!twitchChannelName || !youtubeLiveId)) {
 				res.status(400).json({ message: `Missing twitchChannelName or youtubeLiveId` });
 				return;
@@ -151,11 +152,6 @@ export class CommuniQi {
 	}
 
 	private static addPower = (userName: string, heart: string, source: CommuniQiPowerSource) => {
-		if(this.communiQiPowerPool.length >= this.maxPowerPoolSize) {
-			this.communiQiPowerPool = [];
-			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL_EXPLODED');
-		}
-
 		if(heart === 'e' || heart === 'n' || heart === '<3' || YoutTubeHeartWaveCandidates.includes(heart) || TwitchHeartWaveCandidates.includes(heart)) {
 			heart = CommonHeartWaveCandidates[Math.floor(Math.random() * CommonHeartWaveCandidates.length)];
 		}
@@ -169,6 +165,12 @@ export class CommuniQi {
 		this.communiQiPowerPool.push(communiQiPower);
 
 		SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_UP', communiQiPower);
+
+		if(this.communiQiPowerPool.length >= this.maxPowerPoolSize) {
+			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL_EXPLODED');
+			this.communiQiPowerPool = [];
+			SocketServer.in('COMMUNI_QI').emit('COMMUNI_QI_POWER_POOL', this.communiQiPowerPool);
+		}
 	};
 
 	public static usePower = (howMuch: number) => {

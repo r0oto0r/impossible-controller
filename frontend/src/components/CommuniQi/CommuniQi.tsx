@@ -82,7 +82,7 @@ function CommuniQi(): JSX.Element {
 		};
 	}, [ dispatch ]);
 
-	const calculateOpacity = () => {
+	const calculateOpacity = React.useCallback(() => {
 		if(powerPool.length < 1) {
 			return 0;
 		}
@@ -92,9 +92,9 @@ function CommuniQi(): JSX.Element {
 		if(opacity < 0.2) opacity = 0.2;
 
 		return opacity;
-	};
+	}, [ powerPool, maxPoolSize ]);
 
-	const calculateSize = () => {
+	const calculateSize = React.useCallback(() => {
 		if(powerPool.length < 1) {
 			return 0;
 		}
@@ -103,7 +103,7 @@ function CommuniQi(): JSX.Element {
 
 		const size = (fillPercentage / 100) * 300;
 		return size;
-	};
+	}, [ powerPool, maxPoolSize ]);
 
 	return (
 		<div

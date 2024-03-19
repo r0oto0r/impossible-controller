@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/general";
-import { setAudioKey, setByteTimeDomainData } from "../../slices/audioStreamInfoSlice";
+import { setAudioInfo, setByteTimeDomainData } from "../../slices/audioStreamInfoSlice";
 import { SocketClient } from "../../socket/SocketClient";
 import { getSettings } from "../../slices/settingsSlice";
 import { getAudio } from "../../slices/audioSlice";
 import { PitchDetector } from "pitchfinder/lib/detectors/types";
 import Pitchfinder from "pitchfinder";
 
-const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+export const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 const FLUTE_THRESHOLD_RMS = 7;
 const FLUTE_LOUDNESS_THRESHOLD = 200;
@@ -41,6 +41,16 @@ function AudioAnalyzer(): JSX.Element {
 	const detectPitch = useRef<PitchDetector>(Pitchfinder.AMDF());
 
 	useEffect(() => {
+		const requestAnalyzerFrame = (callback: FrameRequestCallback) => {
+			return requestAnimationFrame(callback);
+		};
+
+		const cancelAnalyzerFrame = (id: number) => {
+			cancelAnimationFrame(id);
+		};
+
+		if(rafId.current) cancelAnalyzerFrame(rafId.current);
+
 		const calculateRMS = (dataUint8Array: Uint8Array) => {
 			const sq = dataUint8Array.map((v) => (v * v));
 			const s = sq.reduce((a, v) => (a + v));
@@ -90,25 +100,29 @@ function AudioAnalyzer(): JSX.Element {
 				}
 
 				if(lastKey.current !== key.current || lastOctave.current !== octave.current) {
-					console.log(`Key: ${key.current}, Octave: ${octave.current}`);
 					SocketClient.emit('FLUTE_AUDIO_DATA', {
 						key: key.current,
 						octave: octave.current
 					});
-					dispatch(setAudioKey(key.current));
+					dispatch(setAudioInfo({
+						key: key.current,
+						octave: octave.current
+					}));
 					lastKey.current = key.current;
 					lastOctave.current = octave.current;
 				}
 
 				dispatch(setByteTimeDomainData(byteTimeDomainData?.current));
-				rafId.current = requestAnimationFrame(tick);
+				if(!extraMenusHidden) {
+					setCurrentAudioValues({
+						peakFrequency: currentPeakFrequency,
+						rms: currentRMS,
+						pitch: currentPitch,
+						loudness: currentLoudness
+					});
+				}
 
-				setCurrentAudioValues({
-					peakFrequency: currentPeakFrequency,
-					rms: currentRMS,
-					pitch: currentPitch,
-					loudness: currentLoudness
-				});
+				rafId.current = requestAnalyzerFrame(tick);
 			}
 		}
 
@@ -122,15 +136,15 @@ function AudioAnalyzer(): JSX.Element {
 			floatFrequencyData.current = new Float32Array(analyser.current.frequencyBinCount);
 			source.connect(analyser.current);
 
-			rafId.current = requestAnimationFrame(tick.bind(AudioAnalyzer));
+			rafId.current = requestAnalyzerFrame(tick);
 
 			return () => {
-				cancelAnimationFrame(rafId.current);
+				cancelAnalyzerFrame(rafId.current);
 				analyser.current && analyser.current.disconnect();
 				source.disconnect();
 			}
 		}
-	}, [mediaAudio, recording, dispatch]);
+	}, [mediaAudio, recording, dispatch, extraMenusHidden]);
 
 	return (
 		<div className="w3-container w3-center" hidden={extraMenusHidden}>

@@ -77,7 +77,7 @@ function CommuniQiSettings(): JSX.Element {
 				</div>
 				<div className="w3-col s2">
 					{maxPoolSize}
-					<input className="w3-input w3-border w3-round" type="range" min="0" max="100" value={maxPoolSize} onChange={(event) => dispatch(setMaxPoolSize(Number(event.target.value)))} />
+					<input className="w3-input w3-border w3-round" type="range" min="0" max="100" value={maxPoolSize} onChange={(event) => dispatch(setMaxPoolSize(!Number.isNaN(parseInt(event.target.value))? parseInt(event.target.value) : 0))} />
 				</div>
 				<div className="w3-col s2">
 					<button className={`w3-button w3-round ${started ? 'w3-green' : 'w3-blue'}`} onClick={toggleStatus}>

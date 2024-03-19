@@ -24,7 +24,7 @@ function Main(): JSX.Element {
 			}
 		};
 
-		SocketClient.on('COMMUNI_QI_STATUS', (status: { started: boolean; maxPoolSize: number; useRBTVWebsiteChat: boolean }) => {
+		SocketClient.on('COMMUNI_QI_STATUS', (status: { started: boolean; maxPowerPoolSize: number; useRBTVWebsiteChat: boolean }) => {
 			dispatch(setStarted(status));
 		});
 
