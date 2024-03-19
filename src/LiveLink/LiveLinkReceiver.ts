@@ -145,9 +145,13 @@ export class LiveLinkReceiver {
 					const x = -liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
 					const y = -liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
 
-					if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
+					if('keymode' === 'keymode') {
+						if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
+							this.moveMouse({ x, y });
+						};
+					} else {
 						this.moveMouse({ x, y });
-					};
+					}
 				}
 			} else {
 				if(Object.keys(this.keysPressedCache).length > 0) {

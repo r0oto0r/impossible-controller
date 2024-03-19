@@ -17,7 +17,7 @@ export class LiveLinkKeyBindings {
 			res.json(await this.loadKeyBindings());
 		});
 
-		app.post('/livelink//key-bindings', async (req, res) => {
+		app.post('/livelink/key-bindings', async (req, res) => {
 			const { bindings } = req.body as { bindings: LiveLinkKeyBinding[] };
 
 			for(const binding of bindings) {
@@ -29,7 +29,7 @@ export class LiveLinkKeyBindings {
 			res.json(await this.loadKeyBindings());
 		});
 
-		app.delete('/livelink//key-bindings/:faceBlendShape/:keyCode', async (req, res) => {
+		app.delete('/livelink/key-bindings/:faceBlendShape/:keyCode', async (req, res) => {
 			const { faceBlendShape, keyCode } = req.params;
 
 			await LiveLinkKeyBindingsModel.deleteKeyBinding(faceBlendShape, keyCode);
@@ -37,13 +37,13 @@ export class LiveLinkKeyBindings {
 			res.json(await this.loadKeyBindings());
 		});
 
-		app.delete('/livelink//key-bindings', async (_, res) => {
+		app.delete('/livelink/key-bindings', async (_, res) => {
 			await LiveLinkKeyBindingsModel.deleteAllKeyBindings();
 
 			res.json(await this.loadKeyBindings());
 		});
 
-		app.get('/livelink//blend-shapes', async (_, res) => {
+		app.get('/livelink/blend-shapes', async (_, res) => {
 			res.json(Object.values(FaceBlendShape).filter(value => typeof value === 'string') as string[]);
 		});
 
