@@ -7,7 +7,6 @@ import { LeapCommand, LeapKeyBindings } from "./LeapKeyBindings";
 
 export class LeapReceiver {
 	private static keysPressedCache: KeyPressedMap = {};
-
 	public static async init() {
 		Log.info("Initializing Leap Receiver");
 	}
@@ -29,6 +28,12 @@ export class LeapReceiver {
 		}
 
 		const keyBindings = LeapKeyBindings.getBindings();
+
+		if(!leapData.leftHandClosed && !leapData.rightHandClosed) {
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+		} else {
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
+		}
 
 		if(!leapData.leftHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
