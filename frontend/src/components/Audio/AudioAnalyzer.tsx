@@ -42,26 +42,29 @@ function AudioAnalyzer(): JSX.Element {
 
 	useEffect(() => {
 		const requestAnalyzerFrame = (callback: FrameRequestCallback) => {
-			return requestAnimationFrame(callback);
+			return setTimeout(callback, 1000 / 30);
 		};
 
 		const cancelAnalyzerFrame = (id: number) => {
-			cancelAnimationFrame(id);
+			clearInterval(id);
 		};
 
 		if(rafId.current) cancelAnalyzerFrame(rafId.current);
 
 		const calculateRMS = (dataUint8Array: Uint8Array) => {
-			const sq = dataUint8Array.map((v) => (v * v));
-			const s = sq.reduce((a, v) => (a + v));
-			return Math.sqrt(s / dataUint8Array.length);
+			let sum = 0;
+			for (let i = 0; i < dataUint8Array.length; i++) {
+				const value = dataUint8Array[i];
+				sum += value * value;
+			}
+			return Math.sqrt(sum / dataUint8Array.length);
 		};
 
+		// Convert the frequency to a musical pitch. source https://stackoverflow.com/questions/41174545/pitch-detection-node-js
+		// c = 440.0(2^-4.75)
+		const c0 = 440.0 * Math.pow(2.0, -4.75);
 		const detectKey = (currentPitch: number, currentRMS: number, currentLoudness: number) => {
 			if(currentPitch !== null && currentLoudness > FLUTE_LOUDNESS_THRESHOLD && currentRMS > FLUTE_THRESHOLD_RMS) {
-				// Convert the frequency to a musical pitch. source https://stackoverflow.com/questions/41174545/pitch-detection-node-js
-				// c = 440.0(2^-4.75)
-				const c0 = 440.0 * Math.pow(2.0, -4.75);
 				// h = round(12log2(f / c))
 				const halfStepsBelowMiddleC = Math.round(12.0 * Math.log2(currentPitch / c0));
 				// o = floor(h / 12)
@@ -87,7 +90,6 @@ function AudioAnalyzer(): JSX.Element {
 				let currentPeakFrequency = Math.max.apply(null, Array.from(byteTimeDomainData.current));
 				let currentRMS = calculateRMS(byteTimeDomainData.current);
 				let currentLoudness = Math.max.apply(null, Array.from(byteFrequencyData.current));
-
 				if(!currentPitch) currentPitch = 0;
 				if(!currentPeakFrequency) currentPeakFrequency = 0;
 				if(!currentRMS) currentRMS = 0;

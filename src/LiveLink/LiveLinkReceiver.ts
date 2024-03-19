@@ -142,8 +142,8 @@ export class LiveLinkReceiver {
 						}
 					}
 
-					const x = liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
-					const y = liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
+					const x = -liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
+					const y = -liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
 
 					if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
 						this.moveMouse({ x, y });
