@@ -87,6 +87,8 @@ export interface LiveLinkData {
 export class LiveLinkReceiver {
 	private static keysPressedCache: KeyPressedMap = {} as KeyPressedMap;
 	private static lastFrameNumber: number = 0;
+	private static freeLook: boolean = false;
+	private static lastMousePosition: { x: number, y: number } = { x: 0, y: 0 };
 
 	public static init() {
 		Log.info("Initializing Live Link Face Receiver");
@@ -109,6 +111,9 @@ export class LiveLinkReceiver {
 		});
 
 		socket.on('LIVE_LINK_TEST_MOVE_MOUSE', this.moveMouse);
+		socket.on('LIVE_LINK_FREE_LOOK', (freeLook: boolean) => {
+			this.freeLook = freeLook;
+		});
 	}
 
 	private static handleFaceLinkMessage(message: Buffer, remote: RemoteInfo) {
@@ -145,12 +150,18 @@ export class LiveLinkReceiver {
 					const x = -liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
 					const y = -liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
 
-					if('keymode' === 'keymode') {
+					if(!this.freeLook) {
 						if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
 							this.moveMouse({ x, y });
 						};
 					} else {
-						this.moveMouse({ x, y });
+						if(x < -0.01 || x > 0.01 || y < -0.01 || y > 0.01) {
+							const { x: lastX, y: lastY } = this.lastMousePosition;
+							const deltaX = x - lastX;
+							const deltaY = y - lastY;
+							this.moveMouse({ x: deltaX, y: deltaY });
+							this.lastMousePosition = { x, y };
+						};
 					}
 				}
 			} else {

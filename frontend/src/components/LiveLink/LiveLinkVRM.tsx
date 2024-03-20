@@ -108,6 +108,13 @@ function LiveLinkVRM(): JSX.Element {
 					if(liveLinkData.blendShapes[FaceBlendShape.RightEyeRoll] <= maxEyeRoll && liveLinkData.blendShapes[FaceBlendShape.RightEyeRoll] >= minEyeRoll) {
 						currentVrm.humanoid.getNormalizedBoneNode('rightEye').rotation.z = -liveLinkData.blendShapes[FaceBlendShape.RightEyeRoll];
 					}
+
+					dispatch(setTrigger({
+						leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < -0.2,
+						rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > 0.2,
+						upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < -0.2,
+						downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > 0.2
+					}));
 				}
 			} else {
 				if(cleared) {
