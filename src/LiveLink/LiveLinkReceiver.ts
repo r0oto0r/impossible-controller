@@ -112,6 +112,7 @@ export class LiveLinkReceiver {
 
 		socket.on('LIVE_LINK_TEST_MOVE_MOUSE', this.moveMouse);
 		socket.on('LIVE_LINK_FREE_LOOK', (freeLook: boolean) => {
+			Log.info(`Free look: ${freeLook}`);
 			this.freeLook = freeLook;
 		});
 	}
