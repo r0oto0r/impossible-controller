@@ -2,15 +2,18 @@ import React, { useEffect } from "react";
 import { createSelector } from 'reselect'
 import { RootState } from "../../store/store";
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
 import { vec3 } from "gl-matrix";
 import { LeapHand, LeapHandControllerInput, LeapHandType, LeapVector } from "../../common/LeapInterfaces";
 import { useAppSelector } from "../../hooks/general";
 import { SocketClient } from "../../socket/SocketClient";
+import { useParams } from "react-router-dom";
+import { LeapSocketClient } from '../../socket/LeapSocketClient';
 
 const boxWidth = 70;
+LeapSocketClient.init();
 
 function LeapHandsVisualizer(): JSX.Element {
+	const { type } = useParams();
 	const selectHandNumberOfHands = ({ leapTracking: state }: RootState) => {
 		return state.hands?.length;
 	}
@@ -47,16 +50,6 @@ function LeapHandsVisualizer(): JSX.Element {
 	const leftMesh = React.useRef<THREE.Mesh>(new THREE.Mesh());
 	const rightMesh = React.useRef<THREE.Mesh>(new THREE.Mesh());
 
-	const testCube = React.useRef<THREE.Mesh>(new THREE.Mesh());
-	const testSphere = React.useRef<THREE.Mesh>(new THREE.Mesh());
-	const testSphere2 = React.useRef<THREE.Mesh>(new THREE.Mesh());
-
-	// CANNON
-	const world = React.useRef<CANNON.World>(new CANNON.World());
-	const cannonTestCubeBody = React.useRef<CANNON.Body>(new CANNON.Body({ mass: 5 }));
-	const cannonTestSphereBody = React.useRef<CANNON.Body>(new CANNON.Body({ mass: 1 }));
-	const cannonTestSphere2Body = React.useRef<CANNON.Body>(new CANNON.Body({ mass: 1 }));
-
 	const selectNumberAndHands = createSelector(
 		[selectHandNumberOfHands, selectHands],
 		(numberOfHands, hands) => {
@@ -81,7 +74,6 @@ function LeapHandsVisualizer(): JSX.Element {
 	useEffect(() => {
 		if(!scene.current) {
 			initScene();
-			initPhysics();
 		} else if(scene.current && camera.current) {
 			renderer.current?.render(scene.current, camera.current);
 		}
@@ -106,7 +98,7 @@ function LeapHandsVisualizer(): JSX.Element {
 		camera.current.position.set(0, 500, 500);
 
 		const groundPlane = new THREE.PlaneGeometry(1000, 1000);
-		const groundMat = new THREE.MeshStandardMaterial({ color: 0xc2c2c2 });
+		const groundMat = new THREE.MeshStandardMaterial({ color: 0x282c34 });
 		groundMesh.current = new THREE.Mesh(groundPlane, groundMat);
 		groundMesh.current.position.y = 30
 		groundMesh.current.receiveShadow = true;
@@ -114,7 +106,7 @@ function LeapHandsVisualizer(): JSX.Element {
 		scene.current.add(groundMesh.current);
 
 		const frontPlane = new THREE.PlaneGeometry(1000, 1000);
-		const frontMat = new THREE.MeshStandardMaterial({ color: 0xf2f2f2 });
+		const frontMat = new THREE.MeshStandardMaterial({ color: 0x282c34 });
 		frontMesh.current = new THREE.Mesh(frontPlane, frontMat);
 		frontMesh.current.position.y = 30
 		frontMesh.current.position.z = -350
@@ -122,7 +114,7 @@ function LeapHandsVisualizer(): JSX.Element {
 		scene.current.add(frontMesh.current);
 
 		const leftPlane = new THREE.PlaneGeometry(1000, 1000);
-		const leftMat = new THREE.MeshStandardMaterial({ color: 0xf2f2f2 });
+		const leftMat = new THREE.MeshStandardMaterial({ color: 0x282c34 });
 		leftMesh.current = new THREE.Mesh(leftPlane, leftMat);
 		leftMesh.current.position.y = 30
 		leftMesh.current.position.x = -500
@@ -132,7 +124,7 @@ function LeapHandsVisualizer(): JSX.Element {
 		scene.current.add(leftMesh.current);
 
 		const rightPlane = new THREE.PlaneGeometry(1000, 1000);
-		const rightMat = new THREE.MeshStandardMaterial({ color: 0xf2f2f2 });
+		const rightMat = new THREE.MeshStandardMaterial({ color: 0x282c34 });
 		rightMesh.current = new THREE.Mesh(rightPlane, rightMat);
 		rightMesh.current.position.y = 30;
 		rightMesh.current.position.x = 500;
@@ -148,31 +140,6 @@ function LeapHandsVisualizer(): JSX.Element {
 		heightBarCube.current.castShadow = true;
 		heightBarCube.current.receiveShadow = true;
 		scene.current.add(heightBarCube.current);
-
-		const testCubeGeometry = new THREE.BoxGeometry(50, 50, 50);
-		const testCubeMaterial = new THREE.MeshStandardMaterial({ color: 0x0000FF });
-		testCube.current = new THREE.Mesh(testCubeGeometry, testCubeMaterial);
-		testCube.current.position.set(0, 400, 50);
-		testCube.current.castShadow = true;
-		testCube.current.receiveShadow = true;
-		testCube.current.rotateZ(1 * Math.PI / 180);
-		scene.current.add(testCube.current);
-
-		const testSphereGeometry = new THREE.SphereGeometry(25, 50, 50);
-		const testSphereMaterial = new THREE.MeshStandardMaterial({ color: 0x00F0FF });
-		testSphere.current = new THREE.Mesh(testSphereGeometry, testSphereMaterial);
-		testSphere.current.position.set(0, 300, 50);
-		testSphere.current.castShadow = true;
-		testSphere.current.receiveShadow = true;
-		scene.current.add(testSphere.current);
-
-		const testSphereGeometry2 = new THREE.SphereGeometry(30, 50, 50);
-		const testSphereMaterial2 = new THREE.MeshStandardMaterial({ color: 0xF0F0FF });
-		testSphere2.current = new THREE.Mesh(testSphereGeometry2, testSphereMaterial2);
-		testSphere2.current.position.set(0, 500, 50);
-		testSphere2.current.castShadow = true;
-		testSphere2.current.receiveShadow = true;
-		scene.current.add(testSphere2.current);
 
 		const leftHandGeometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
 		const leftHandMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -215,140 +182,12 @@ function LeapHandsVisualizer(): JSX.Element {
 		scene.current.add(ambiLight);
 	}
 
-	function initPhysics() {
-		world.current.gravity.set(0, -9.82, 0);
-
-		world.current.broadphase = new CANNON.NaiveBroadphase();
-		world.current.solver.iterations = 10;
-
-		// const cubeShape = new CANNON.Box(new CANNON.Vec3(25, 25, 25));
-		// cannonTestCubeBody.current.addShape(cubeShape)
-		// cannonTestCubeBody.current.position.set(
-		// 	testCube.current.position.x,
-		// 	testCube.current.position.y,
-		// 	testCube.current.position.z
-		// );
-		// cannonTestCubeBody.current.quaternion.set(
-		// 	testCube.current.quaternion.x,
-		// 	testCube.current.quaternion.y,
-		// 	testCube.current.quaternion.z, 
-		// 	testCube.current.quaternion.w,
-		// );
-		// world.current.addBody(cannonTestCubeBody.current);
-
-		// const sphereShape = new CANNON.Sphere(25);
-		// cannonTestSphereBody.current.addShape(sphereShape)
-		// cannonTestSphereBody.current.position.set(
-		// 	testSphere.current.position.x,
-		// 	testSphere.current.position.y,
-		// 	testSphere.current.position.z
-		// );
-		// cannonTestSphereBody.current.quaternion.set(
-		// 	testSphere.current.quaternion.x,
-		// 	testSphere.current.quaternion.y,
-		// 	testSphere.current.quaternion.z, 
-		// 	testSphere.current.quaternion.w,
-		// );
-		// world.current.addBody(cannonTestSphereBody.current);
-
-		// const sphereShape2 = new CANNON.Sphere(30);
-		// cannonTestSphere2Body.current.addShape(sphereShape2)
-		// cannonTestSphere2Body.current.position.set(
-		// 	testSphere2.current.position.x,
-		// 	testSphere2.current.position.y,
-		// 	testSphere2.current.position.z
-		// );
-		// cannonTestSphere2Body.current.quaternion.set(
-		// 	testSphere2.current.quaternion.x,
-		// 	testSphere2.current.quaternion.y,
-		// 	testSphere2.current.quaternion.z, 
-		// 	testSphere2.current.quaternion.w,
-		// );
-		// world.current.addBody(cannonTestSphere2Body.current);
-
-		const groundPlaneShape = new CANNON.Plane();
-		const groundPlaneBody = new CANNON.Body({ mass: 0 });
-		groundPlaneBody.addShape(groundPlaneShape);
-		groundPlaneBody.position.set(
-			groundMesh.current.position.x,
-			groundMesh.current.position.y,
-			groundMesh.current.position.z
-		);
-		groundPlaneBody.quaternion.set(
-			groundMesh.current.quaternion.x,
-			groundMesh.current.quaternion.y,
-			groundMesh.current.quaternion.z, 
-			groundMesh.current.quaternion.w,
-		);
-		world.current.addBody(groundPlaneBody);
-
-		const frontPlaneShape = new CANNON.Plane();
-		const frontPlaneBody = new CANNON.Body({ mass: 0 });
-		frontPlaneBody.addShape(frontPlaneShape);
-		frontPlaneBody.position.set(
-			frontMesh.current.position.x,
-			frontMesh.current.position.y,
-			frontMesh.current.position.z
-		);
-		frontPlaneBody.quaternion.set(
-			frontMesh.current.quaternion.x,
-			frontMesh.current.quaternion.y,
-			frontMesh.current.quaternion.z, 
-			frontMesh.current.quaternion.w,
-		);
-		world.current.addBody(frontPlaneBody);
-
-		const leftPlaneShape = new CANNON.Plane();
-		const leftPlaneBody = new CANNON.Body({ mass: 0 });
-		leftPlaneBody.addShape(leftPlaneShape);
-		leftPlaneBody.position.set(
-			leftMesh.current.position.x,
-			leftMesh.current.position.y,
-			leftMesh.current.position.z
-		);
-		leftPlaneBody.quaternion.set(
-			leftMesh.current.quaternion.x,
-			leftMesh.current.quaternion.y,
-			leftMesh.current.quaternion.z, 
-			leftMesh.current.quaternion.w,
-		);
-		world.current.addBody(leftPlaneBody);
-
-		const rightPlaneShape = new CANNON.Plane();
-		const rightPlaneBody = new CANNON.Body({ mass: 0 });
-		rightPlaneBody.addShape(rightPlaneShape);
-		rightPlaneBody.position.set(
-			rightMesh.current.position.x,
-			rightMesh.current.position.y,
-			rightMesh.current.position.z
-		);
-		rightPlaneBody.quaternion.set(
-			rightMesh.current.quaternion.x,
-			rightMesh.current.quaternion.y,
-			rightMesh.current.quaternion.z, 
-			rightMesh.current.quaternion.w,
-		);
-		world.current.addBody(rightPlaneBody);
-	}
-
 	function distance(prevJoint: LeapVector, nextJoint: LeapVector) {
 		const prevJointVec3 = vec3.fromValues(prevJoint.x, prevJoint.y, prevJoint.z);
 		const nextJointVec3 = vec3.fromValues(nextJoint.x, nextJoint.y, nextJoint.z);
 
 		return vec3.distance(prevJointVec3, nextJointVec3);
 	}
-
-	// function lerp(out: vec3, prevJoint: LeapVector, nextJoint: LeapVector, t: number) {
-	// 	const prevJointVec3 = vec3.fromValues(prevJoint.x, prevJoint.y, prevJoint.z);
-	// 	const nextJointVec3 = vec3.fromValues(nextJoint.x, nextJoint.y, nextJoint.z);
-	// 	vec3.lerp(out, prevJointVec3, nextJointVec3, t);
-	// };
-
-	// function center(prevJoint: LeapVector, nextJoint: LeapVector) {
-	// 	const center = vec3.create();
-	// 	lerp(center, prevJoint, nextJoint, 0.5);
-	// 	return center;
-	// };
 
 	function createFingerObjects() {
 		const fingers: Array<Array<THREE.Mesh>> = new Array<Array<THREE.Mesh>>();
@@ -423,17 +262,6 @@ function LeapHandsVisualizer(): JSX.Element {
 		const dt = now - lastTic.current;
 		lastTic.current = now;
 		rafId.current = requestAnimationFrame(draw);
-
-		world.current.step(dt / 100);
-
-		testCube.current.position.set(cannonTestCubeBody.current.position.x, cannonTestCubeBody.current.position.y, cannonTestCubeBody.current.position.z);
-		testCube.current.quaternion.set(cannonTestCubeBody.current.quaternion.x, cannonTestCubeBody.current.quaternion.y, cannonTestCubeBody.current.quaternion.z, cannonTestCubeBody.current.quaternion.w)
-
-		testSphere.current.position.set(cannonTestSphereBody.current.position.x, cannonTestSphereBody.current.position.y, cannonTestSphereBody.current.position.z);
-		testSphere.current.quaternion.set(cannonTestSphereBody.current.quaternion.x, cannonTestSphereBody.current.quaternion.y, cannonTestSphereBody.current.quaternion.z, cannonTestSphereBody.current.quaternion.w)
-
-		testSphere2.current.position.set(cannonTestSphere2Body.current.position.x, cannonTestSphere2Body.current.position.y, cannonTestSphere2Body.current.position.z);
-		testSphere2.current.quaternion.set(cannonTestSphere2Body.current.quaternion.x, cannonTestSphere2Body.current.quaternion.y, cannonTestSphere2Body.current.quaternion.z, cannonTestSphere2Body.current.quaternion.w)
 
 		leftHandClosed.current = false;
 		rightHandClosed.current = false;
@@ -580,7 +408,9 @@ function LeapHandsVisualizer(): JSX.Element {
 			renderer.current?.render(scene.current, camera.current);
 		}
 
-		sendHandControllerInput();
+		if(type !== 'viewOnly') {
+			sendHandControllerInput();
+		}
 	}
 
 	return (

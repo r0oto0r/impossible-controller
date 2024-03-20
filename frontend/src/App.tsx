@@ -5,10 +5,8 @@ import store from './store/store';
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from './store/store';
 import { SocketClient } from './socket/SocketClient';
-import { LeapSocketClient } from './socket/LeapSocketClient';
 
 SocketClient.init();
-LeapSocketClient.init();
 
 function App() {
 	return (

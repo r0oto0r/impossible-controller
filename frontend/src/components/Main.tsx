@@ -54,12 +54,20 @@ function Main(): JSX.Element {
 							<LeapHandsVisualizer />
 						</React.Fragment>
 					} />
+					<Route path="leap/:type" element={
+						<React.Fragment>
+							<LeapHandsVisualizer />
+						</React.Fragment>
+					} />
 					<Route path="communiqi" element={
 						<React.Fragment>
 							<CommuniQi />
 						</React.Fragment>
 					} />
 					<Route path="overlay" element={
+						<Overlay />
+					} />
+					<Route path="overlay/:type" element={
 						<Overlay />
 					} />
 					<Route path="settings" element={

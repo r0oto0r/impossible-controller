@@ -5,12 +5,14 @@ import KeysPressedView from '../Common/KeysPressedView';
 import store from '../../store/store';
 import { getCommuniQi } from '../../slices/communiQiSlice';
 import { useAppSelector } from '../../hooks/general';
+import { useParams } from 'react-router-dom';
 
 const tenorAppKey = 'AIzaSyDRwWBmJBR3R409K_RyE-7wypCUXABXyUQ';
 const tenorTags = ['lol', 'rofl', 'smirk', 'smile', 'grin', 'laugh', 'chuckle', 'giggle', 'snicker', 'cackle', 'guffaw', 'titter', 'teehee', 'snort', 'chortle', 'hehe', 'haha', 'hahaha'];
 
 function Overlay(): JSX.Element {
 	const { maxPoolSize } = useAppSelector(state => getCommuniQi(state));
+	const { type } = useParams();
 	const gifImgRefArray = React.useRef<{ div: HTMLImageElement, gif: { url: string, duration: number } }[]>([]);
 
 	useEffect(() => {
@@ -138,6 +140,18 @@ function Overlay(): JSX.Element {
 		<React.Fragment>
 			<KeysPressedView />
 			<CommuniQi />
+			{type === 'test' && <div
+				style={{
+					position: 'absolute',
+					top: '50%',
+					left: '50%',
+					transform: 'translate(-50%, -50%)',
+					color: 'red',
+					fontSize: '2em',
+					fontWeight: 'bold'
+				}}>
+				Test
+			</div>}
 		</React.Fragment>
 	);
 }

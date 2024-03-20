@@ -54,13 +54,11 @@ function AudioVisualizer(): JSX.Element {
 				if(context) {
 					context.clearRect(0, 0, width, height);
 
-					context.globalAlpha = 0.5;
-
 					const rectWidth = 800;
 					const rectHeight = 70;
 					const rectX = (width - rectWidth) / 2;
-					const rectY = (height - rectHeight) / 2;
-					context.fillStyle = '#333';
+					const rectY = ((height - rectHeight) / 2) - 100;
+					context.fillStyle = '#ffff00';
 					context.fillRect(rectX, rectY, rectWidth, rectHeight);
 
 					context.fillStyle = '#fff';
@@ -77,8 +75,6 @@ function AudioVisualizer(): JSX.Element {
 
 					context.fillStyle = '#fff';
 					context.fillRect(rectX - positionMap[currentKey+currentOctave], rectY + (rectHeight / 2) - 5, 700, 10);
-
-					context.globalAlpha = 1.0;
 
 					if(byteTimeDomainData) {
 						let x = 0;

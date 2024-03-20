@@ -31,19 +31,22 @@ export class LeapReceiver {
 
 		if(!leapData.leftHandClosed && !leapData.rightHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else {
+		} else if(leapData.leftHandClosed && leapData.rightHandClosed) {
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
 		if(!leapData.leftHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else {
+		} else if(!leapData.rightHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandClosed).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
 		if(!leapData.rightHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else {
+		} else if(!leapData.leftHandClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandClosed).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
@@ -65,15 +68,24 @@ export class LeapReceiver {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BarTouchedRight).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
+		if(!leapData.leftHandAboveBar && !leapData.rightHandAboveBar) {
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+		} else if(leapData.leftHandAboveBar && leapData.rightHandAboveBar) {
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
+
+			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
+		}
+
 		if(!leapData.leftHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else {
+		} else if(!leapData.rightHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
 		if(!leapData.rightHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else {
+		} else if(!leapData.leftHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 	}

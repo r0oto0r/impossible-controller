@@ -9,7 +9,8 @@ export enum LeapCommand {
 	BarTouchedRight = 'BarTouchedRight',
 	LeftHandAboveBar = 'LeftHandAboveBar',
 	RightHandAboveBar = 'RightHandAboveBar',
-	BothHandsClosed = 'BothHandsClosed'
+	BothHandsClosed = 'BothHandsClosed',
+	BothHandsAboveBar = 'BothHandsAboveBar'
 };
 
 export interface LeapKeyBinding {
