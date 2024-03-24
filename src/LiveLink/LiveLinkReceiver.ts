@@ -89,7 +89,7 @@ export class LiveLinkReceiver {
 	private static lastFrameNumber: number = 0;
 	private static freeLook: boolean = false;
 	private static lastMousePosition: { x: number, y: number } = { x: 0, y: 0 };
-	private static freeLookSensivity: number = 100;
+	private static freeLookSensivity: number = 50;
 
 	public static init() {
 		Log.info("Initializing Live Link Face Receiver");
