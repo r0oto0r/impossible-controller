@@ -89,13 +89,14 @@ export class LiveLinkReceiver {
 	private static lastFrameNumber: number = 0;
 	private static freeLook: boolean = false;
 	private static lastMousePosition: { x: number, y: number } = { x: 0, y: 0 };
+	private static freeLookSensivity: number = 100;
 
 	public static init() {
 		Log.info("Initializing Live Link Face Receiver");
 
 		const serverSocket = dgramServer.init();
 
-		serverSocket.on('message', this.handleFaceLinkMessage.bind(this));
+		serverSocket.on('message', this.handleFaceLinkMessage);
 	}
 
 	private static moveMouse = (data: { x: number, y: number }) => {
@@ -117,7 +118,7 @@ export class LiveLinkReceiver {
 		});
 	}
 
-	private static handleFaceLinkMessage(message: Buffer, remote: RemoteInfo) {
+	private static handleFaceLinkMessage = (message: Buffer, remote: RemoteInfo) => {
 		try {
 			const liveLinkData = LiveLinkReceiver.decode(message);
 
@@ -160,9 +161,11 @@ export class LiveLinkReceiver {
 							const { x: lastX, y: lastY } = this.lastMousePosition;
 							const deltaX = x - lastX;
 							const deltaY = y - lastY;
-							this.moveMouse({ x: deltaX, y: deltaY });
+							this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
 							this.lastMousePosition = { x, y };
-						};
+						} else {
+							this.lastMousePosition = { x: 0, y: 0 };
+						}
 					}
 				}
 			} else {
