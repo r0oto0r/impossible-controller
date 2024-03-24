@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/general";
 import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape, setMouseModeActive, setTrigger, setFreeLook } from "../../slices/liveLinkDataSlice";
 import { SocketClient } from "../../socket/SocketClient";
@@ -109,6 +109,11 @@ function LiveLinkAnalyzer(): JSX.Element {
 		};
 	}, [ dispatch, freeLook ]);
 
+	const toogleFreeLook = useCallback(() => {
+		dispatch(setFreeLook(!freeLook));
+		SocketClient.emit('LIVE_LINK_FREE_LOOK', !freeLook);
+	}, [ dispatch, freeLook ]);
+
 	return (
 		<div className="livelinkkeymapping" hidden={extraMenusHidden}>
 			<div className="w3-container">	
@@ -148,7 +153,7 @@ function LiveLinkAnalyzer(): JSX.Element {
 				</div>
 				<div className="w3-row-padding">
 					<div className="w3-half">
-						<input className="w3-check" type="checkbox" checked={freeLook} onChange={(e) => dispatch(setFreeLook(e.target.checked))} />
+						<input className="w3-check" type="checkbox" checked={freeLook} onChange={toogleFreeLook} />
 						<label>Free Look</label>
 					</div>
 				</div>
