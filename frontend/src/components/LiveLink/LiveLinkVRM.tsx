@@ -16,7 +16,7 @@ const minEyeRoll = -0.2;
 
 function LiveLinkVRM(): JSX.Element {
 	const dispatch = useAppDispatch();
-	const { avatar, mouseModeActive, triggerLeft, triggerRight, triggerUp, triggerDown } = useAppSelector((state) => getLiveLinkData(state));
+	const { avatar, mouseModeActive, triggerLeft, triggerRight, triggerUp, triggerDown, freeLook } = useAppSelector((state) => getLiveLinkData(state));
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -110,10 +110,10 @@ function LiveLinkVRM(): JSX.Element {
 					}
 
 					dispatch(setTrigger({
-						leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < -0.2,
-						rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > 0.2,
-						upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < -0.2,
-						downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > 0.2
+						leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.01 : -0.2),
+						rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > (freeLook ? 0.01 : 0.2),
+						upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.01 : -0.2),
+						downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.01 : 0.2)
 					}));
 				}
 			} else {
@@ -203,7 +203,7 @@ function LiveLinkVRM(): JSX.Element {
 				}));
 			}
 		};
-	}, [ avatar, mouseModeActive, dispatch ]);
+	}, [ avatar, mouseModeActive, freeLook, dispatch ]);
 
 	return (
 		<React.Fragment>

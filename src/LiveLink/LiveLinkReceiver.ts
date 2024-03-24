@@ -109,12 +109,14 @@ export class LiveLinkReceiver {
 				return;
 			}
 			socket.join(room);
+			socket.emit('LIVE_LINK_FREE_LOOK', this.freeLook);
 		});
 
 		socket.on('LIVE_LINK_TEST_MOVE_MOUSE', this.moveMouse);
 		socket.on('LIVE_LINK_FREE_LOOK', (freeLook: boolean) => {
 			Log.info(`Free look: ${freeLook}`);
 			this.freeLook = freeLook;
+			SocketServer.in('LIVE_LINK').emit('LIVE_LINK_FREE_LOOK', freeLook);
 		});
 	}
 

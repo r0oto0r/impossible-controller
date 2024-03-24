@@ -75,7 +75,7 @@ function LiveLinkAnalyzer(): JSX.Element {
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
-		function processLiveLinkData(liveLinkData: LiveLinkData) {
+		const processLiveLinkData = (liveLinkData: LiveLinkData) => {
 			dispatch(setLiveLinkData(liveLinkData));
 			dispatch(setTrigger({
 				leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.01 : -0.2),
@@ -85,20 +85,26 @@ function LiveLinkAnalyzer(): JSX.Element {
 			}));
 		}
 
+		const processFreeLook = (freeLook: boolean) => {
+			dispatch(setFreeLook(freeLook));
+		}
+
 		SocketClient.on('connect', () => {
 			SocketClient.emit('JOIN_ROOM', 'LIVE_LINK');
 			SocketClient.on('LIVE_LINK_DATA', processLiveLinkData);
-			SocketClient.emit('LIVE_LINK_FREE_LOOK', freeLook);
+			SocketClient.on('LIVE_LINK_FREE_LOOK', processFreeLook);
 		});
 
 		SocketClient.on('disconnect', () => {
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
+			SocketClient.off('LIVE_LINK_FREE_LOOK', processFreeLook);
 			dispatch(setLiveLinkData(undefined));
 		});
 
 		return () => {
 			SocketClient.emit('LEAVE_ROOM', 'LIVE_LINK');
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
+			SocketClient.off('LIVE_LINK_FREE_LOOK', processFreeLook);
 			dispatch(setLiveLinkData(undefined));
 		};
 	}, [ dispatch, freeLook ]);
