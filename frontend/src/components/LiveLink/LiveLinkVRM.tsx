@@ -110,10 +110,10 @@ function LiveLinkVRM(): JSX.Element {
 					}
 
 					dispatch(setTrigger({
-						leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.05 : -0.2),
-						rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > (freeLook ? 0.05 : 0.2),
-						upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.05 : -0.2),
-						downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.05 : 0.2)
+						leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.02 : -0.2),
+						rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > (freeLook ? 0.02 : 0.2),
+						upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.02 : -0.2),
+						downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.02 : 0.2)
 					}));
 				}
 			} else {
