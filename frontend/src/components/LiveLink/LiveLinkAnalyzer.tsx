@@ -78,10 +78,10 @@ function LiveLinkAnalyzer(): JSX.Element {
 		const processLiveLinkData = (liveLinkData: LiveLinkData) => {
 			dispatch(setLiveLinkData(liveLinkData));
 			dispatch(setTrigger({
-				leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.01 : -0.2),
-				rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > (freeLook ? 0.01 : 0.2),
-				upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.01 : -0.2),
-				downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.01 : 0.2)
+				leftTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] < (freeLook ? -0.1 : -0.2),
+				rightTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadYaw] > (freeLook ? 0.1 : 0.2),
+				upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.1 : -0.2),
+				downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.1 : 0.2)
 			}));
 		}
 

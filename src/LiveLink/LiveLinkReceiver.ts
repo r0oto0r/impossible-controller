@@ -159,7 +159,7 @@ export class LiveLinkReceiver {
 							this.moveMouse({ x, y });
 						};
 					} else {
-						if(x < -0.01 || x > 0.01 || y < -0.01 || y > 0.01) {
+						if(x < -0.1 || x > 0.1 || y < -0.1 || y > 0.1) {
 							const { x: lastX, y: lastY } = this.lastMousePosition;
 							const deltaX = x - lastX;
 							const deltaY = y - lastY;
