@@ -160,12 +160,13 @@ export class LiveLinkReceiver {
 						};
 					} else {
 						if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
-							if(x > -0.5 && x < 0.5 && y > -0.5 && y < 0.5) {
+							if(x > -0.4 && x < 0.4 && y > -0.4 && y < 0.4) {
 								const { x: lastX, y: lastY } = this.lastMousePosition;
 								const deltaX = x - lastX;
 								const deltaY = y - lastY;
-								console.log(`DeltaX: ${deltaX}, DeltaY: ${deltaY}`);
-								this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
+								if(deltaX > 0.0008 || deltaX < -0.0008 || deltaY > 0.0008 || deltaY < -0.0008) {
+									this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
+								}
 								this.lastMousePosition = { x, y };
 							} else {
 								this.moveMouse({ x, y });
