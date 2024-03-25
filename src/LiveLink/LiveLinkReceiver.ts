@@ -159,12 +159,17 @@ export class LiveLinkReceiver {
 							this.moveMouse({ x, y });
 						};
 					} else {
-						if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
-							const { x: lastX, y: lastY } = this.lastMousePosition;
-							const deltaX = x - lastX;
-							const deltaY = y - lastY;
-							this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
-							this.lastMousePosition = { x, y };
+						if(x < -0.03 || x > 0.03 || y < -0.03 || y > 0.03) {
+							if(x > -0.06 && x < 0.06 && y > -0.06 && y < 0.06) {
+								const { x: lastX, y: lastY } = this.lastMousePosition;
+								const deltaX = x - lastX;
+								const deltaY = y - lastY;
+								this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
+								this.lastMousePosition = { x, y };
+							} else {
+								this.moveMouse({ x: x * this.freeLookSensivity, y: y * this.freeLookSensivity });
+								this.lastMousePosition = { x, y };
+							}
 						}
 					}
 				}
