@@ -160,11 +160,11 @@ export class LiveLinkReceiver {
 						};
 					} else {
 						if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
-							if(x > -0.35 && x < 0.35 && y > -0.35 && y < 0.35) {
+							if(x > -0.3 && x < 0.3 && y > -0.3 && y < 0.3) {
 								const { x: lastX, y: lastY } = this.lastMousePosition;
 								const deltaX = x - lastX;
 								const deltaY = y - lastY;
-								if(deltaX > 0.002 || deltaX < -0.002 || deltaY > 0.002 || deltaY < -0.002) {
+								if(deltaX > 0.0025 || deltaX < -0.0025 || deltaY > 0.0025 || deltaY < -0.0025) {
 									this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
 								}
 								this.lastMousePosition = { x, y };
