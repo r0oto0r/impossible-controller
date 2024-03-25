@@ -67,7 +67,7 @@ export class Keyboard {
 			CommuniQi.usePower(yetToPress.length);
 			yetToPress.forEach(key => this.keysPressedCache[key] = true);
 			try {
-				const HIDMessage = this.generateHIDMessage(yetToPress);
+				const HIDMessage = this.generateHIDMessage(keysPressed);
 				this.keyboardStream.write(HIDMessage);
 				SocketServer.in('KEYBOARD').emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 			} catch (error) {
@@ -84,8 +84,8 @@ export class Keyboard {
 				this.keyboardStream.write(CLEAR_ALL);
 				yetToRelease.forEach(key => this.keysPressedCache[key] = undefined);
 				const keysStillPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
-				if(keysStillPressed.length > 0) { 
-					const HIDMessage = this.generateHIDMessage(yetToRelease);
+				if(keysStillPressed.length > 0) {
+					const HIDMessage = this.generateHIDMessage(keysStillPressed);
 					this.keyboardStream.write(HIDMessage);
 				}
 				SocketServer.in('KEYBOARD').emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
