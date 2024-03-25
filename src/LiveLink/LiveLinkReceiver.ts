@@ -120,7 +120,7 @@ export class LiveLinkReceiver {
 		});
 	}
 
-	private static handleFaceLinkMessage = (message: Buffer, remote: RemoteInfo) => {
+	private static handleFaceLinkMessage = (message: Buffer) => {
 		try {
 			const liveLinkData = LiveLinkReceiver.decode(message);
 
@@ -160,13 +160,16 @@ export class LiveLinkReceiver {
 						};
 					} else {
 						if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
-							const { x: lastX, y: lastY } = this.lastMousePosition;
-							const deltaX = x - lastX;
-							const deltaY = y - lastY;
-							this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
-							this.lastMousePosition = { x, y };
-						} else {
-							this.lastMousePosition = { x: 0, y: 0 };
+							if(x < -0.6 || x > 0.6 || y < -0.6 || y > 0.6) {
+								const { x: lastX, y: lastY } = this.lastMousePosition;
+								const deltaX = x - lastX;
+								const deltaY = y - lastY;
+								this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
+								this.lastMousePosition = { x, y };
+							} else {
+								this.moveMouse({ x, y });
+								this.lastMousePosition = { x, y };
+							}
 						}
 					}
 				}

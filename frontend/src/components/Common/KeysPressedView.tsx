@@ -144,9 +144,17 @@ function KeysPressedView(): JSX.Element {
 			dispatch(setKeysPressed(keysPressed));
 		}
 
-		SocketClient.on('KEYS_PRESSED', processKeysPressed);
+		SocketClient.on('connect', () => {
+			SocketClient.emit('JOIN_ROOM', 'KEYBOARD');
+			SocketClient.on('KEYS_PRESSED', processKeysPressed);
+		});
+
+		SocketClient.on('disconnect', () => {
+			SocketClient.off('KEYS_PRESSED', processKeysPressed);
+		});
 
 		return () => {
+			SocketClient.emit('LEAVE_ROOM', 'KEYBOARD');
 			SocketClient.off('KEYS_PRESSED', processKeysPressed);
 		};
 	}, [ dispatch ]);
