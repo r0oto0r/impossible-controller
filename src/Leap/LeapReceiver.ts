@@ -20,8 +20,6 @@ export class LeapReceiver {
 	}
 
 	private static handleLeapData = (leapData: LeapHandControllerInput) => {
-		Log.debug(`Received leap data: ${JSON.stringify(leapData)}`);
-
 		if(!leapData) {
 			this.clearAllKeys();
 			return;
@@ -93,7 +91,6 @@ export class LeapReceiver {
 	public static clearAllKeys() {
 		const keysPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 		if(keysPressed.length > 0) {
-			Log.debug(`Clearing all keys.`);
 			this.keysPressedCache = {} as KeyPressedMap;
 			Keyboard.release(keysPressed);
 		}
@@ -101,7 +98,6 @@ export class LeapReceiver {
 
 	public static keyDown(code: string) {
 		if(!this.keysPressedCache[code]) {
-			Log.debug(`Web key code ${code} pressed.`);
 			this.keysPressedCache[code] = true;
 			const keysPressed = Object.keys(this.keysPressedCache).filter(code => this.keysPressedCache[code]);
 			Keyboard.press(keysPressed);
@@ -110,7 +106,6 @@ export class LeapReceiver {
 
 	public static keyUp(code: string) {
 		if(this.keysPressedCache[code]) {
-			Log.debug(`Web key code ${code} released.`);
 			this.keysPressedCache[code] = undefined;
 			Keyboard.release([code]);
 		}

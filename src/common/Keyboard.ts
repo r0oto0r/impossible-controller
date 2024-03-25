@@ -46,14 +46,14 @@ export class Keyboard {
 			} else {
 				const normalKey = HIDKeyMap[key];
 				if(normalKey && payloadLength < MAX_HID_MESSAGE_LENGTH_WITHOUT_HEADER) {
-					payloadLength = payloadLength + 1;
+					payloadLength++;
 					HIDMessage = `${HIDMessage}${normalKey}`;
 				}
 			}
 		}
 
 		while(payloadLength < MAX_HID_MESSAGE_LENGTH_WITHOUT_HEADER) {
-			++payloadLength
+			++payloadLength;
 			HIDMessage = `${HIDMessage}${HIDKeys.KEY_NONE}`;
 		}
 
@@ -82,7 +82,7 @@ export class Keyboard {
 		if(yetToRelease.length > 0) {
 			try {
 				this.keyboardStream.write(CLEAR_ALL);
-				yetToRelease.forEach(key => this.keysPressedCache[key] = false);
+				yetToRelease.forEach(key => this.keysPressedCache[key] = undefined);
 				const keysStillPressed = Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]);
 				if(keysStillPressed.length > 0) { 
 					const HIDMessage = this.generateHIDMessage(yetToRelease);
