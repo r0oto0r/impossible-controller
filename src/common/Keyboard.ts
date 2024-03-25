@@ -67,7 +67,7 @@ export class Keyboard {
 			CommuniQi.usePower(yetToPress.length);
 			yetToPress.forEach(key => this.keysPressedCache[key] = true);
 			try {
-				const HIDMessage = this.generateHIDMessage(keysPressed);
+				const HIDMessage = this.generateHIDMessage([...yetToPress, ...keysPressed]);
 				this.keyboardStream.write(HIDMessage);
 				SocketServer.in('KEYBOARD').emit(KeyboardMessage.KEYS_PRESSED, Object.keys(this.keysPressedCache).filter(key => this.keysPressedCache[key]));
 			} catch (error) {
