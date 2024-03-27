@@ -23,7 +23,6 @@ function LeapHandsVisualizer(): JSX.Element {
 	const selectHands = ({ leapTracking: state }: RootState) => state.hands
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 	const rafId = React.useRef<number>(0);
-	const lastTic = React.useRef<number>(0);
 
 	const leftHandClosed = React.useRef<boolean>(false);
 	const rightHandClosed = React.useRef<boolean>(false);
@@ -85,7 +84,6 @@ function LeapHandsVisualizer(): JSX.Element {
 		} else if(scene.current && camera.current) {
 			renderer.current?.render(scene.current, camera.current);
 		}
-		lastTic.current = performance.now();
 		rafId.current = requestAnimationFrame(draw.bind(LeapHandsVisualizer));
 	});
 
@@ -332,9 +330,6 @@ function LeapHandsVisualizer(): JSX.Element {
 	}
 
 	function draw() {
-		const now = performance.now();
-		const dt = now - lastTic.current;
-		lastTic.current = now;
 		rafId.current = requestAnimationFrame(draw);
 
 		leftHandClosed.current = false;
