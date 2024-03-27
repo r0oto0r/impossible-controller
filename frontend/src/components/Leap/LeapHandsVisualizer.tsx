@@ -10,8 +10,8 @@ import { useParams } from "react-router-dom";
 import { LeapSocketClient } from '../../socket/LeapSocketClient';
 
 const boxWidth = 70;
-const millisHandHasToBeClosed = 100;
-const millisHandHasToBeAboveBar = 100;
+const millisHandHasToBeClosed = 50;
+const millisHandHasToBeAboveBar = 50;
 
 LeapSocketClient.init();
 
@@ -242,32 +242,47 @@ function LeapHandsVisualizer(): JSX.Element {
 			if(leftHandClosedSince.current === 0) {
 				leftHandClosedSince.current = performance.now();
 			}
-			if(performance.now() - leftHandClosedSince.current > millisHandHasToBeClosed && !rightHandClosed.current) {
+			if((performance.now() - leftHandClosedSince.current > millisHandHasToBeClosed) && !rightHandClosed.current) {
 				leapHandControllerInput.leftHandClosed = true;
-				(leftHandCube as any).material.color.setHex(0x00ff00);
+				if(leftHandCube.current) {
+					(leftHandCube.current as any).material.color.setHex(0x00ff00);
+				}
 			}
 		} else {
 			leftHandClosedSince.current = 0;
-			(leftHandCube as any).material.color.setHex(0xff0000);
+			if(leftHandCube.current) {
+				(leftHandCube.current as any).material.color.setHex(0xff0000);
+			}
 		}
 
 		if(rightHandClosed.current && !leftHandClosed.current) {
 			if(rightHandClosedSince.current === 0) {
 				rightHandClosedSince.current = performance.now();
 			}
-			if(performance.now() - rightHandClosedSince.current > millisHandHasToBeClosed && !leftHandClosed.current) {
+			if((performance.now() - rightHandClosedSince.current > millisHandHasToBeClosed) && !leftHandClosed.current) {
 				leapHandControllerInput.rightHandClosed = true;
-				(rightHandCube as any).material.color.setHex(0x00ff00);
+				if(rightHandCube.current) {
+					(rightHandCube.current as any).material.color.setHex(0x00ff00);
+				}
 			}
 		} else {
 			rightHandClosedSince.current = 0;
-			(rightHandCube as any).material.color.setHex(0x0000ff);
+			if(rightHandCube.current) {
+				(rightHandCube.current as any).material.color.setHex(0x0000ff);
+			}
 		}
 
 		if(leftHandClosed.current && rightHandClosed.current) {
-			(leftHandCube as any).material.color.setHex(0xffff00);
-			(rightHandCube as any).material.color.setHex(0xffff00);
+			if(leftHandCube.current && rightHandCube.current) {
+				(leftHandCube.current as any).material.color.setHex(0xffff00);
+				(rightHandCube.current as any).material.color.setHex(0xffff00);
+			}
 			leapHandControllerInput.bothHandsClosed = true;
+		} else if (leapHandControllerInput.leftHandClosed === false && leapHandControllerInput.rightHandClosed === false) {
+			if(leftHandCube.current && rightHandCube.current) {
+				(leftHandCube.current as any).material.color.setHex(0xff0000);
+				(rightHandCube.current as any).material.color.setHex(0x0000ff);
+			}
 		}
 
 		if(leftHandHight.current > 300) {
@@ -299,6 +314,8 @@ function LeapHandsVisualizer(): JSX.Element {
 		if(leftHandHight.current > 300 && rightHandHight.current > 300) {
 			leapHandControllerInput.bothHandsAboveBar = true;
 			(heightBarCube.current as any).material.color.setHex(0x00ff00);
+		} else if (leapHandControllerInput.leftHandAboveBar === false && leapHandControllerInput.rightHandAboveBar === false) {
+			(heightBarCube.current as any).material.color.setHex(0xffffff);
 		}
 
 		if(leapHandControllerInput.leftHandClosed !== lastLeapHandsControllerInput.current.leftHandClosed ||
@@ -455,12 +472,12 @@ function LeapHandsVisualizer(): JSX.Element {
 			}
 		}
 
-		if(scene.current && camera.current) {
-			renderer.current?.render(scene.current, camera.current);
-		}
-
 		if(type !== 'viewOnly') {
 			sendHandControllerInput();
+		}
+
+		if(scene.current && camera.current) {
+			renderer.current?.render(scene.current, camera.current);
 		}
 	}
 
