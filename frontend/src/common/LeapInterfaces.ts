@@ -144,8 +144,10 @@ export enum LeapServerEvent {
 export interface LeapHandControllerInput {
 	leftHandClosed: boolean;
 	rightHandClosed: boolean;
+	bothHandsClosed: boolean;
 	handsTouch: boolean;
 	barTouchedLastHand?: LeapHandType;
 	leftHandAboveBar: boolean;
 	rightHandAboveBar: boolean;
+	bothHandsAboveBar: boolean;
 };

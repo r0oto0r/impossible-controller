@@ -10,6 +10,9 @@ import { useParams } from "react-router-dom";
 import { LeapSocketClient } from '../../socket/LeapSocketClient';
 
 const boxWidth = 70;
+const millisHandHasToBeClosed = 100;
+const millisHandHasToBeAboveBar = 100;
+
 LeapSocketClient.init();
 
 function LeapHandsVisualizer(): JSX.Element {
@@ -22,7 +25,6 @@ function LeapHandsVisualizer(): JSX.Element {
 	const rafId = React.useRef<number>(0);
 	const lastTic = React.useRef<number>(0);
 
-	// THREE
 	const leftHandClosed = React.useRef<boolean>(false);
 	const rightHandClosed = React.useRef<boolean>(false);
 	const handsTouch = React.useRef<boolean>(false);
@@ -30,6 +32,10 @@ function LeapHandsVisualizer(): JSX.Element {
 	const barTouched = React.useRef<boolean>(false);
 	const leftHandHight = React.useRef<number>(0);
 	const rightHandHight = React.useRef<number>(0);
+	const leftHandClosedSince = React.useRef<number>(0);
+	const rightHandClosedSince = React.useRef<number>(0);
+	const leftHandAboveBarSince = React.useRef<number>(0);
+	const rightHandAboveBarSince = React.useRef<number>(0);
 
 	const scene = React.useRef<THREE.Scene | undefined>(undefined);
 	const camera = React.useRef<THREE.PerspectiveCamera>(new THREE.PerspectiveCamera());
@@ -61,10 +67,12 @@ function LeapHandsVisualizer(): JSX.Element {
 	const lastLeapHandsControllerInput = React.useRef<LeapHandControllerInput>({
 		leftHandClosed: false,
 		rightHandClosed: false,
+		bothHandsClosed: false,
 		handsTouch: false,
 		barTouchedLastHand: undefined,
 		leftHandAboveBar: false,
-		rightHandAboveBar: false
+		rightHandAboveBar: false,
+		bothHandsAboveBar: false
 	});
 
 	useAppSelector(selectNumberAndHands);
@@ -220,38 +228,87 @@ function LeapHandsVisualizer(): JSX.Element {
 
 	function sendHandControllerInput() {
 		let leapHandControllerInput: LeapHandControllerInput = {
-			leftHandClosed: leftHandClosed.current,
-			rightHandClosed: rightHandClosed.current,
-			handsTouch: handsTouch.current,
-			barTouchedLastHand: barTouched.current ? barTouchedLastHand.current : undefined,
+			leftHandClosed: false,
+			rightHandClosed: false,
+			bothHandsClosed: false,
+			handsTouch: false,
+			barTouchedLastHand: undefined,
 			leftHandAboveBar: false,
-			rightHandAboveBar: false
+			rightHandAboveBar: false,
+			bothHandsAboveBar: false
 		};
 
-		if(leftHandHight.current > 300) {
-			(heightBarCube.current as any).material.color.setHex(0xff00ff);
-			leapHandControllerInput.leftHandAboveBar = true;
+		if(leftHandClosed.current && !rightHandClosed.current) {
+			if(leftHandClosedSince.current === 0) {
+				leftHandClosedSince.current = performance.now();
+			}
+			if(performance.now() - leftHandClosedSince.current > millisHandHasToBeClosed && !rightHandClosed.current) {
+				leapHandControllerInput.leftHandClosed = true;
+				(leftHandCube as any).material.color.setHex(0x00ff00);
+			}
 		} else {
+			leftHandClosedSince.current = 0;
+			(leftHandCube as any).material.color.setHex(0xff0000);
+		}
+
+		if(rightHandClosed.current && !leftHandClosed.current) {
+			if(rightHandClosedSince.current === 0) {
+				rightHandClosedSince.current = performance.now();
+			}
+			if(performance.now() - rightHandClosedSince.current > millisHandHasToBeClosed && !leftHandClosed.current) {
+				leapHandControllerInput.rightHandClosed = true;
+				(rightHandCube as any).material.color.setHex(0x00ff00);
+			}
+		} else {
+			rightHandClosedSince.current = 0;
+			(rightHandCube as any).material.color.setHex(0x0000ff);
+		}
+
+		if(leftHandClosed.current && rightHandClosed.current) {
+			(leftHandCube as any).material.color.setHex(0xffff00);
+			(rightHandCube as any).material.color.setHex(0xffff00);
+			leapHandControllerInput.bothHandsClosed = true;
+		}
+
+		if(leftHandHight.current > 300) {
+			if(leftHandAboveBarSince.current === 0) {
+				leftHandAboveBarSince.current = performance.now();
+			}
+			if(performance.now() - leftHandAboveBarSince.current > millisHandHasToBeAboveBar && rightHandHight.current <= 300) {
+				leapHandControllerInput.leftHandAboveBar = true;
+				(heightBarCube.current as any).material.color.setHex(0xff00ff);
+			}
+		} else {
+			leftHandAboveBarSince.current = 0;
 			(heightBarCube.current as any).material.color.setHex(0xffffff);
 		}
 
 		if(rightHandHight.current > 300) {
-			(heightBarCube.current as any).material.color.setHex(0x0000ff);
-			leapHandControllerInput.rightHandAboveBar = true;
+			if(rightHandAboveBarSince.current === 0) {
+				rightHandAboveBarSince.current = performance.now();
+			}
+			if(performance.now() - rightHandAboveBarSince.current > millisHandHasToBeAboveBar && leftHandHight.current <= 300) {
+				leapHandControllerInput.rightHandAboveBar = true;
+				(heightBarCube.current as any).material.color.setHex(0xff00ff);
+			}
 		} else if (leapHandControllerInput.leftHandAboveBar === false) {
+			rightHandAboveBarSince.current = 0;
 			(heightBarCube.current as any).material.color.setHex(0xffffff);
 		}
 
-		if(leapHandControllerInput.leftHandAboveBar && leapHandControllerInput.rightHandAboveBar) {
+		if(leftHandHight.current > 300 && rightHandHight.current > 300) {
+			leapHandControllerInput.bothHandsAboveBar = true;
 			(heightBarCube.current as any).material.color.setHex(0x00ff00);
 		}
 
 		if(leapHandControllerInput.leftHandClosed !== lastLeapHandsControllerInput.current.leftHandClosed ||
 			leapHandControllerInput.rightHandClosed !== lastLeapHandsControllerInput.current.rightHandClosed ||
+			leapHandControllerInput.bothHandsClosed !== lastLeapHandsControllerInput.current.bothHandsClosed ||
 			leapHandControllerInput.handsTouch !== lastLeapHandsControllerInput.current.handsTouch ||
 			leapHandControllerInput.barTouchedLastHand !== lastLeapHandsControllerInput.current.barTouchedLastHand ||
 			leapHandControllerInput.leftHandAboveBar !== lastLeapHandsControllerInput.current.leftHandAboveBar ||
-			leapHandControllerInput.rightHandAboveBar !== lastLeapHandsControllerInput.current.rightHandAboveBar) {
+			leapHandControllerInput.rightHandAboveBar !== lastLeapHandsControllerInput.current.rightHandAboveBar ||
+			leapHandControllerInput.bothHandsAboveBar !== lastLeapHandsControllerInput.current.bothHandsAboveBar) {
 			lastLeapHandsControllerInput.current = leapHandControllerInput;
 			SocketClient.emit('LEAP_DATA', leapHandControllerInput);
 		}
@@ -304,17 +361,11 @@ function LeapHandsVisualizer(): JSX.Element {
 					} else {
 						rightHandClosed.current = true;
 					}
-					(curCube as any).material.color.setHex(0x00ff00);
 				} else {
 					if(handType === LeapHandType.LEFT) {
 						leftHandClosed.current = false;
 					} else {
 						rightHandClosed.current = false;
-					}
-					if(handType === LeapHandType.LEFT) {
-						(curCube as any).material.color.setHex(0xff0000);
-					} else {
-						(curCube as any).material.color.setHex(0x0000ff);
 					}
 				}
 				curCube.position.x = hand.palm.position.x;
