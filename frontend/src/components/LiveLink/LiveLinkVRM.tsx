@@ -16,7 +16,7 @@ const minEyeRoll = -0.2;
 
 function LiveLinkVRM(): JSX.Element {
 	const dispatch = useAppDispatch();
-	const { avatar, mouseModeActive, triggerLeft, triggerRight, triggerUp, triggerDown, freeLook } = useAppSelector((state) => getLiveLinkData(state));
+	const { avatar, followLocalMouse, triggerLeft, triggerRight, triggerUp, triggerDown, freeLook } = useAppSelector((state) => getLiveLinkData(state));
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -84,7 +84,7 @@ function LiveLinkVRM(): JSX.Element {
 					}
 				}
 
-				if(!mouseModeActive) {
+				if(!followLocalMouse) {
 					currentVrm.humanoid.getNormalizedBoneNode('neck').rotation.y = liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
 					currentVrm.humanoid.getNormalizedBoneNode('neck').rotation.x = liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
 					currentVrm.humanoid.getNormalizedBoneNode('neck').rotation.z = -liveLinkData.blendShapes[FaceBlendShape.HeadRoll];
@@ -174,7 +174,7 @@ function LiveLinkVRM(): JSX.Element {
 			}
 		}
 
-		if(mouseModeActive) {
+		if(followLocalMouse) {
 			window.addEventListener('mousemove', followMouse);
 		}
 
@@ -193,7 +193,7 @@ function LiveLinkVRM(): JSX.Element {
 
 		return () => {
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
-			if(mouseModeActive) {
+			if(followLocalMouse) {
 				window.removeEventListener('mousemove', followMouse);
 				dispatch(setTrigger({
 					leftTrigger: false,
@@ -203,7 +203,7 @@ function LiveLinkVRM(): JSX.Element {
 				}));
 			}
 		};
-	}, [ avatar, mouseModeActive, freeLook, dispatch ]);
+	}, [ avatar, followLocalMouse, freeLook, dispatch ]);
 
 	return (
 		<React.Fragment>

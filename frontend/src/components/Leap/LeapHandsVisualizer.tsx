@@ -29,8 +29,8 @@ function LeapHandsVisualizer(): JSX.Element {
 	const handsTouch = React.useRef<boolean>(false);
 	const barTouchedLastHand = React.useRef<LeapHandType>(LeapHandType.RIGHT);
 	const barTouched = React.useRef<boolean>(false);
-	const leftHandHight = React.useRef<number>(0);
-	const rightHandHight = React.useRef<number>(0);
+	const leftHandHeight = React.useRef<number>(0);
+	const rightHandHeight = React.useRef<number>(0);
 	const leftHandClosedSince = React.useRef<number>(0);
 	const rightHandClosedSince = React.useRef<number>(0);
 	const leftHandAboveBarSince = React.useRef<number>(0);
@@ -240,7 +240,7 @@ function LeapHandsVisualizer(): JSX.Element {
 			if(leftHandClosedSince.current === 0) {
 				leftHandClosedSince.current = performance.now();
 			}
-			if((performance.now() - leftHandClosedSince.current > millisHandHasToBeClosed) && !rightHandClosed.current) {
+			if(lastLeapHandsControllerInput.current.bothHandsClosed || (performance.now() - leftHandClosedSince.current > millisHandHasToBeClosed)) {
 				leapHandControllerInput.leftHandClosed = true;
 				if(leftHandCube.current) {
 					(leftHandCube.current as any).material.color.setHex(0x00ff00);
@@ -257,7 +257,7 @@ function LeapHandsVisualizer(): JSX.Element {
 			if(rightHandClosedSince.current === 0) {
 				rightHandClosedSince.current = performance.now();
 			}
-			if((performance.now() - rightHandClosedSince.current > millisHandHasToBeClosed) && !leftHandClosed.current) {
+			if(lastLeapHandsControllerInput.current.bothHandsClosed || (performance.now() - rightHandClosedSince.current > millisHandHasToBeClosed)) {
 				leapHandControllerInput.rightHandClosed = true;
 				if(rightHandCube.current) {
 					(rightHandCube.current as any).material.color.setHex(0x00ff00);
@@ -283,11 +283,11 @@ function LeapHandsVisualizer(): JSX.Element {
 			}
 		}
 
-		if(leftHandHight.current > 300) {
+		if(leftHandHeight.current > 300  && rightHandHeight.current <= 300) {
 			if(leftHandAboveBarSince.current === 0) {
 				leftHandAboveBarSince.current = performance.now();
 			}
-			if(performance.now() - leftHandAboveBarSince.current > millisHandHasToBeAboveBar && rightHandHight.current <= 300) {
+			if(lastLeapHandsControllerInput.current.bothHandsAboveBar || (performance.now() - leftHandAboveBarSince.current > millisHandHasToBeAboveBar && rightHandHeight.current <= 300)) {
 				leapHandControllerInput.leftHandAboveBar = true;
 				(heightBarCube.current as any).material.color.setHex(0xff00ff);
 			}
@@ -296,11 +296,11 @@ function LeapHandsVisualizer(): JSX.Element {
 			(heightBarCube.current as any).material.color.setHex(0xffffff);
 		}
 
-		if(rightHandHight.current > 300) {
+		if(rightHandHeight.current > 300 && leftHandHeight.current <= 300) {
 			if(rightHandAboveBarSince.current === 0) {
 				rightHandAboveBarSince.current = performance.now();
 			}
-			if(performance.now() - rightHandAboveBarSince.current > millisHandHasToBeAboveBar && leftHandHight.current <= 300) {
+			if(lastLeapHandsControllerInput.current.bothHandsAboveBar || (performance.now() - rightHandAboveBarSince.current > millisHandHasToBeAboveBar && leftHandHeight.current <= 300)) {
 				leapHandControllerInput.rightHandAboveBar = true;
 				(heightBarCube.current as any).material.color.setHex(0xff00ff);
 			}
@@ -309,7 +309,7 @@ function LeapHandsVisualizer(): JSX.Element {
 			(heightBarCube.current as any).material.color.setHex(0xffffff);
 		}
 
-		if(leftHandHight.current > 300 && rightHandHight.current > 300) {
+		if(leftHandHeight.current > 300 && rightHandHeight.current > 300) {
 			leapHandControllerInput.bothHandsAboveBar = true;
 			(heightBarCube.current as any).material.color.setHex(0x00ff00);
 		} else if (leapHandControllerInput.leftHandAboveBar === false && leapHandControllerInput.rightHandAboveBar === false) {
@@ -336,8 +336,8 @@ function LeapHandsVisualizer(): JSX.Element {
 		rightHandClosed.current = false;
 		handsTouch.current = false;
 		barTouched.current = false;
-		leftHandHight.current = 0;
-		rightHandHight.current = 0;
+		leftHandHeight.current = 0;
+		rightHandHeight.current = 0;
 
 		leftHandCube.current.position.x = 0;
 		leftHandCube.current.position.y = -1000;
@@ -385,9 +385,9 @@ function LeapHandsVisualizer(): JSX.Element {
 				curCube.position.z = hand.palm.position.z;
 
 				if(handType === LeapHandType.LEFT) {
-					leftHandHight.current = hand.palm.position.y;
+					leftHandHeight.current = hand.palm.position.y;
 				} else {
-					rightHandHight.current = hand.palm.position.y
+					rightHandHeight.current = hand.palm.position.y
 				}
 
 				curCube.scale.x = hand.palm.width / boxWidth / 1.4;

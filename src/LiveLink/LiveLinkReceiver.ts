@@ -87,6 +87,7 @@ export interface LiveLinkData {
 export class LiveLinkReceiver {
 	private static keysPressedCache: KeyPressedMap = {} as KeyPressedMap;
 	private static lastFrameNumber: number = 0;
+	private static mouseMode: boolean = false;
 	private static freeLook: boolean = false;
 	private static lastMousePosition: { x: number, y: number } = { x: 0, y: 0 };
 	private static freeLookSensivity: number = 50;
@@ -109,6 +110,7 @@ export class LiveLinkReceiver {
 				return;
 			}
 			socket.join(room);
+			socket.emit('LIVE_LINK_MOUSE_MODE', this.mouseMode);
 			socket.emit('LIVE_LINK_FREE_LOOK', this.freeLook);
 		});
 
@@ -117,6 +119,11 @@ export class LiveLinkReceiver {
 			Log.info(`Free look: ${freeLook}`);
 			this.freeLook = freeLook;
 			SocketServer.in('LIVE_LINK').emit('LIVE_LINK_FREE_LOOK', freeLook);
+		});
+		socket.on('LIVE_LINK_MOUSE_MODE', (mouseMode: boolean) => {
+			Log.info(`Mouse mode: ${mouseMode}`);
+			this.mouseMode = mouseMode;
+			SocketServer.in('LIVE_LINK').emit('LIVE_LINK_MOUSE_MODE', mouseMode);
 		});
 	}
 
@@ -151,26 +158,28 @@ export class LiveLinkReceiver {
 						}
 					}
 
-					const x = -liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
-					const y = -liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
+					if(this.mouseMode) {
+						const x = -liveLinkData.blendShapes[FaceBlendShape.HeadYaw];
+						const y = -liveLinkData.blendShapes[FaceBlendShape.HeadPitch];
 
-					if(!this.freeLook) {
-						if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
-							this.moveMouse({ x, y });
-						};
-					} else {
-						if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
-							if(x > -0.3 && x < 0.3 && y > -0.3 && y < 0.3) {
-								const { x: lastX, y: lastY } = this.lastMousePosition;
-								const deltaX = x - lastX;
-								const deltaY = y - lastY;
-								if(deltaX > 0.0025 || deltaX < -0.0025 || deltaY > 0.0025 || deltaY < -0.0025) {
-									this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
-								}
-								this.lastMousePosition = { x, y };
-							} else {
+						if(!this.freeLook) {
+							if(x < -0.2 || x > 0.2 || y < -0.2 || y > 0.2) {
 								this.moveMouse({ x, y });
-								this.lastMousePosition = { x, y };
+							};
+						} else {
+							if(x < -0.02 || x > 0.02 || y < -0.02 || y > 0.02) {
+								if(x > -0.3 && x < 0.3 && y > -0.3 && y < 0.3) {
+									const { x: lastX, y: lastY } = this.lastMousePosition;
+									const deltaX = x - lastX;
+									const deltaY = y - lastY;
+									if(deltaX > 0.0025 || deltaX < -0.0025 || deltaY > 0.0025 || deltaY < -0.0025) {
+										this.moveMouse({ x: deltaX * this.freeLookSensivity, y: deltaY * this.freeLookSensivity });
+									}
+									this.lastMousePosition = { x, y };
+								} else {
+									this.moveMouse({ x, y });
+									this.lastMousePosition = { x, y };
+								}
 							}
 						}
 					}

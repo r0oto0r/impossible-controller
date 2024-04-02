@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks/general";
-import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape, setMouseModeActive, setTrigger, setFreeLook } from "../../slices/liveLinkDataSlice";
+import { LiveLinkData, getLiveLinkData, setAvatar, setLiveLinkData, setSelectedBlendShape, setFollowLocalMouse, setMouseMode, setTrigger, setFreeLook } from "../../slices/liveLinkDataSlice";
 import { SocketClient } from "../../socket/SocketClient";
 import './LiveLinkAnalyzer.css';
 import { getSettings } from "../../slices/settingsSlice";
@@ -71,7 +71,7 @@ export enum FaceBlendShape {
 
 function LiveLinkAnalyzer(): JSX.Element {
 	const { extraMenusHidden } = useAppSelector((state) => getSettings(state));
-	const { liveLinkData, selectedBlendShape, avatar, mouseModeActive, freeLook } = useAppSelector((state) => getLiveLinkData(state));
+	const { liveLinkData, selectedBlendShape, avatar, followLocalMouse, freeLook, mouseMode } = useAppSelector((state) => getLiveLinkData(state));
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
@@ -89,15 +89,21 @@ function LiveLinkAnalyzer(): JSX.Element {
 			dispatch(setFreeLook(freeLook));
 		}
 
+		const processMouseMode = (mouseMode: boolean) => {
+			dispatch(setMouseMode(mouseMode));
+		}
+
 		SocketClient.on('connect', () => {
 			SocketClient.emit('JOIN_ROOM', 'LIVE_LINK');
 			SocketClient.on('LIVE_LINK_DATA', processLiveLinkData);
 			SocketClient.on('LIVE_LINK_FREE_LOOK', processFreeLook);
+			SocketClient.on('LIVE_LINK_MOUSE_MODE', processMouseMode);
 		});
 
 		SocketClient.on('disconnect', () => {
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
 			SocketClient.off('LIVE_LINK_FREE_LOOK', processFreeLook);
+			SocketClient.off('LIVE_LINK_MOUSE_MODE', processMouseMode);
 			dispatch(setLiveLinkData(undefined));
 		});
 
@@ -105,14 +111,20 @@ function LiveLinkAnalyzer(): JSX.Element {
 			SocketClient.emit('LEAVE_ROOM', 'LIVE_LINK');
 			SocketClient.off('LIVE_LINK_DATA', processLiveLinkData);
 			SocketClient.off('LIVE_LINK_FREE_LOOK', processFreeLook);
+			SocketClient.off('LIVE_LINK_MOUSE_MODE', processMouseMode);
 			dispatch(setLiveLinkData(undefined));
 		};
-	}, [ dispatch, freeLook ]);
+	}, [ dispatch, freeLook, mouseMode ]);
 
 	const toogleFreeLook = useCallback(() => {
 		dispatch(setFreeLook(!freeLook));
 		SocketClient.emit('LIVE_LINK_FREE_LOOK', !freeLook);
 	}, [ dispatch, freeLook ]);
+
+	const toogleMouseMode = useCallback(() => {
+		dispatch(setMouseMode(!mouseMode));
+		SocketClient.emit('LIVE_LINK_MOUSE_MODE', !mouseMode);
+	}, [ dispatch, mouseMode ]);
 
 	return (
 		<div className="livelinkkeymapping" hidden={extraMenusHidden}>
@@ -147,7 +159,13 @@ function LiveLinkAnalyzer(): JSX.Element {
 				</div>
 				<div className="w3-row-padding">
 					<div className="w3-half">
-						<input className="w3-check" type="checkbox" checked={mouseModeActive} onChange={(e) => dispatch(setMouseModeActive(e.target.checked))} />
+						<input className="w3-check" type="checkbox" checked={mouseMode} onChange={toogleMouseMode} />
+						<label>Mouse Mode</label>
+					</div>
+				</div>
+				<div className="w3-row-padding">
+					<div className="w3-half">
+						<input className="w3-check" type="checkbox" checked={followLocalMouse} onChange={(e) => dispatch(setFollowLocalMouse(e.target.checked))} />
 						<label>Mouse Mode Active</label>
 					</div>
 				</div>

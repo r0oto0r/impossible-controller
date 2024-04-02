@@ -23,7 +23,8 @@ export interface LiveLinkState {
 	liveLinkData?: LiveLinkData;
 	selectedBlendShape?: string;
 	avatar: Avatar;
-	mouseModeActive: boolean;
+	mouseMode: boolean;
+	followLocalMouse: boolean;
 	freeLook: boolean;
 	triggerLeft: boolean;
 	triggerRight: boolean;
@@ -33,7 +34,8 @@ export interface LiveLinkState {
 
 const initialState: LiveLinkState = {
 	avatar: 'default_male',
-	mouseModeActive: false,
+	mouseMode: false,
+	followLocalMouse: false,
 	freeLook: false,
 	triggerLeft: false,
 	triggerRight: false,
@@ -54,8 +56,11 @@ export const liveLinkDataSlice = createSlice({
 		setAvatar: (state, action: PayloadAction<Avatar>) => {
 			state.avatar = action.payload;
 		},
-		setMouseModeActive: (state, action: PayloadAction<boolean>) => {
-			state.mouseModeActive = action.payload;
+		setFollowLocalMouse: (state, action: PayloadAction<boolean>) => {
+			state.followLocalMouse = action.payload;
+		},
+		setMouseMode: (state, action: PayloadAction<boolean>) => {
+			state.mouseMode = action.payload;
 		},
 		setFreeLook: (state, action: PayloadAction<boolean>) => {
 			state.freeLook = action.payload;
@@ -74,6 +79,6 @@ export const liveLinkDataSlice = createSlice({
 	}
 });
 
-export const { setLiveLinkData, setSelectedBlendShape, setAvatar, setMouseModeActive, setTrigger, setFreeLook } = liveLinkDataSlice.actions;
+export const { setLiveLinkData, setSelectedBlendShape, setAvatar, setFollowLocalMouse, setMouseMode, setTrigger, setFreeLook } = liveLinkDataSlice.actions;
 export const getLiveLinkData = (state: RootState): LiveLinkState => state.liveLinkData;
 export default liveLinkDataSlice.reducer;
