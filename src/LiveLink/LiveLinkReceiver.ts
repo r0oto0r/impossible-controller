@@ -3,7 +3,6 @@ import struct from 'python-struct';
 import { dgramServer } from '../common/dgramServer';
 import { Keyboard } from '../common/Keyboard';
 import { LiveLinkKeyBindings } from './LiveLinkKeyBindings';
-import { RemoteInfo } from 'dgram';
 import { SocketServer } from '../common/SocketServer';
 import { KeyPressedMap } from '../common/SharedInterfaces';
 import socketio from "socket.io";

@@ -166,7 +166,7 @@ function LiveLinkAnalyzer(): JSX.Element {
 				<div className="w3-row-padding">
 					<div className="w3-half">
 						<input className="w3-check" type="checkbox" checked={followLocalMouse} onChange={(e) => dispatch(setFollowLocalMouse(e.target.checked))} />
-						<label>Mouse Mode Active</label>
+						<label>Follow Mouse</label>
 					</div>
 				</div>
 				<div className="w3-row-padding">
