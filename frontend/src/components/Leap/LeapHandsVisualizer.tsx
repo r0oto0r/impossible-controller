@@ -288,7 +288,6 @@ function LeapHandsVisualizer(): JSX.Element {
 				leftHandAboveBarSince.current = performance.now();
 			}
 			if(lastLeapHandsControllerInput.current.bothHandsAboveBar || (performance.now() - leftHandAboveBarSince.current > millisHandHasToBeAboveBar && rightHandHeight.current <= 300)) {
-				console.log("Left hand above bar");
 				leapHandControllerInput.leftHandAboveBar = true;
 				(heightBarCube.current as any).material.color.setHex(0xff00ff);
 			}
@@ -302,7 +301,6 @@ function LeapHandsVisualizer(): JSX.Element {
 				rightHandAboveBarSince.current = performance.now();
 			}
 			if(lastLeapHandsControllerInput.current.bothHandsAboveBar || (performance.now() - rightHandAboveBarSince.current > millisHandHasToBeAboveBar && leftHandHeight.current <= 300)) {
-				console.log("Right hand above bar");
 				leapHandControllerInput.rightHandAboveBar = true;
 				(heightBarCube.current as any).material.color.setHex(0xff00ff);
 			}
@@ -312,7 +310,6 @@ function LeapHandsVisualizer(): JSX.Element {
 		}
 
 		if(leftHandHeight.current > 300 && rightHandHeight.current > 300) {
-			console.log("Both hands above bar");
 			leapHandControllerInput.bothHandsAboveBar = true;
 			(heightBarCube.current as any).material.color.setHex(0x00ff00);
 		} else if (leapHandControllerInput.leftHandAboveBar === false && leapHandControllerInput.rightHandAboveBar === false) {
