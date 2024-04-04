@@ -27,12 +27,9 @@ export class LeapReceiver {
 
 		const keyBindings = LeapKeyBindings.getBindings();
 
-		if(!leapData.leftHandClosed && !leapData.rightHandClosed) {
+		if(!leapData.bothHandsClosed) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else if(leapData.leftHandClosed && leapData.rightHandClosed) {
-			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandClosed).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-
+		} else {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsClosed).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
@@ -66,9 +63,9 @@ export class LeapReceiver {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BarTouchedRight).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
-		if(!leapData.leftHandAboveBar && !leapData.rightHandAboveBar) {
+		if(!leapData.bothHandsAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-		} else if(leapData.leftHandAboveBar && leapData.rightHandAboveBar) {
+		} else {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
 			Log.info("Both hands above bar");
