@@ -83,15 +83,15 @@ function LiveLinkAnalyzer(): JSX.Element {
 				upTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] < (freeLook ? -0.02 : -0.2),
 				downTrigger: liveLinkData.blendShapes[FaceBlendShape.HeadPitch] > (freeLook ? 0.02 : 0.2)
 			}));
-		}
+		};
 
 		const processFreeLook = (freeLook: boolean) => {
 			dispatch(setFreeLook(freeLook));
-		}
+		};
 
 		const processMouseMode = (mouseMode: boolean) => {
 			dispatch(setMouseMode(mouseMode));
-		}
+		};
 
 		SocketClient.on('connect', () => {
 			SocketClient.emit('JOIN_ROOM', 'LIVE_LINK');

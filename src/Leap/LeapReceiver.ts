@@ -71,19 +71,21 @@ export class LeapReceiver {
 		} else if(leapData.leftHandAboveBar && leapData.rightHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
-
+			Log.info("Both hands above bar");
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.BothHandsAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
 		if(!leapData.leftHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
 		} else if(!leapData.rightHandAboveBar) {
+			Log.info("Left hand above bar");
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.LeftHandAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 
 		if(!leapData.rightHandAboveBar) {
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyUp(keyBinding.keyCode));
 		} else if(!leapData.leftHandAboveBar) {
+			Log.info("Right hand above bar");
 			keyBindings.filter(keyBinding => keyBinding.command === LeapCommand.RightHandAboveBar).forEach(keyBinding => this.keyDown(keyBinding.keyCode));
 		}
 	}
