@@ -7,7 +7,7 @@ import { getCommuniQi } from '../../slices/communiQiSlice';
 import { useAppSelector } from '../../hooks/general';
 import { useParams } from 'react-router-dom';
 
-const tenorAppKey = 'AIzaSyDRwWBmJBR3R409K_RyE-7wypCUXABXyUQ';
+const tenorAppKey = 'TENOR_KEY_HERE';
 const tenorTags = ['lol', 'rofl', 'smirk', 'smile', 'grin', 'laugh', 'chuckle', 'giggle', 'snicker', 'cackle', 'guffaw', 'titter', 'teehee', 'snort', 'chortle', 'hehe', 'haha', 'hahaha'];
 
 function Overlay(): JSX.Element {
