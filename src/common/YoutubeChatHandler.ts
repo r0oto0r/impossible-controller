@@ -25,7 +25,7 @@ export class YoutubeChatHandler {
 
 		this.youtube = google.youtube({
 			version: 'v3',
-			auth: 'AIzaSyCAh0nShKjvSTT4q_NAIry3uYXeeYEMmrc'
+			auth: 'YOUTUBE_KEY'
 		});
 	}
 
