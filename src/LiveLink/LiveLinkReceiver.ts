@@ -86,6 +86,7 @@ export interface LiveLinkData {
 export class LiveLinkReceiver {
 	private static keysPressedCache: KeyPressedMap = {} as KeyPressedMap;
 	private static lastFrameNumber: number = 0;
+	private static lastFrameReceived: number = 0;
 	private static mouseMode: boolean = false;
 	private static freeLook: boolean = false;
 	private static lastMousePosition: { x: number, y: number } = { x: 0, y: 0 };
@@ -97,6 +98,17 @@ export class LiveLinkReceiver {
 		const serverSocket = dgramServer.init();
 
 		serverSocket.on('message', this.handleFaceLinkMessage);
+
+		let clearRunning = false;
+		setInterval(() => {
+			if(performance.now() - this.lastFrameReceived > 1000 && this.lastFrameNumber !== 0) {
+				if(!clearRunning) {
+					clearRunning = true;
+					this.clearAllKeys();
+					clearRunning = false;
+				}
+			}
+		}, 1000);
 	}
 
 	private static moveMouse = (data: { x: number, y: number }) => {
@@ -128,7 +140,8 @@ export class LiveLinkReceiver {
 
 	private static handleFaceLinkMessage = (message: Buffer) => {
 		try {
-			const liveLinkData = LiveLinkReceiver.decode(message);
+			const liveLinkData = LiveLinkReceiver.decode(new Uint8Array(message));
+			this.lastFrameReceived = performance.now();
 
 			if(liveLinkData) {
 				if(liveLinkData.frameNumber > this.lastFrameNumber) {
